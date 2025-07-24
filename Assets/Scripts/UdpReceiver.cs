@@ -12,6 +12,7 @@ public class UdpReceiver : MonoBehaviour
 
     public GameObject targetObject;
     private Quaternion receivedRotation = Quaternion.identity;
+    private Vector3 receivedPosition = Vector3.zero;
 
     void Start()
     {
@@ -36,8 +37,18 @@ public class UdpReceiver : MonoBehaviour
                 if (parsed.rotation_matrix_flat != null && parsed.rotation_matrix_flat.Length == 9)
                 {
                     receivedRotation = ConvertFlatMatrixToQuaternion(parsed.rotation_matrix_flat);
-                    Debug.Log("Alınan rotasyon: " + receivedRotation.eulerAngles);
                 }
+
+                if (parsed.translation != null && parsed.translation.Length == 3)
+                {
+                    receivedPosition = new Vector3(
+                        parsed.translation[0],
+                        -parsed.translation[1],
+                        parsed.translation[2]
+                    );
+                }
+
+                Debug.Log($"Alınan Pozisyon: {receivedPosition}, Rotasyon: {receivedRotation.eulerAngles}");
             }
             catch (Exception e)
             {
@@ -50,7 +61,7 @@ public class UdpReceiver : MonoBehaviour
     {
         if (targetObject != null)
         {
-            // Sadece rotasyonu uygula, konumu değiştirme
+            targetObject.transform.position = receivedPosition;
             targetObject.transform.rotation = receivedRotation;
         }
     }
@@ -58,9 +69,9 @@ public class UdpReceiver : MonoBehaviour
     Quaternion ConvertFlatMatrixToQuaternion(float[] mat)
     {
         Matrix4x4 m = new Matrix4x4();
-        m.m00 = mat[0]; m.m01 = mat[1]; m.m02 = mat[2];
-        m.m10 = mat[3]; m.m11 = mat[4]; m.m12 = mat[5];
-        m.m20 = mat[6]; m.m21 = mat[7]; m.m22 = mat[8];
+        m.m00 = mat[0]; m.m01 = -mat[1]; m.m02 = mat[2];
+        m.m10 = -mat[3]; m.m11 = mat[4]; m.m12 = -mat[5];
+        m.m20 = mat[6]; m.m21 = -mat[7]; m.m22 = mat[8];
         m.m33 = 1f;
 
         return m.rotation;
