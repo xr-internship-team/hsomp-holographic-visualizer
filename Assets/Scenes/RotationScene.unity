@@ -133,8 +133,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1257856630}
   - component: {fileID: 1257856629}
+  - component: {fileID: 1257856631}
   m_Layer: 0
-  m_Name: ScriptObject
+  m_Name: LocationUpdater
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -152,9 +153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65775e207e1cf3f48a8210d846aa1722, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 1281966353}
-  MarkerObject: {fileID: 1478831426}
-  AlphaPoint: {fileID: 1933148478}
+  markerOrigin: {fileID: 0}
+  worldPoint: {fileID: 0}
 --- !u!4 &1257856630
 Transform:
   m_ObjectHideFlags: 0
@@ -170,6 +170,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1257856631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1257856628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1406925810837343bae2388e2efbf00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  markerOrigin: {fileID: 0}
+  worldPoint: {fileID: 0}
 --- !u!1 &1281966351
 GameObject:
   m_ObjectHideFlags: 0
