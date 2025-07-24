@@ -5,10 +5,10 @@ public class TargetLocationUpdater : MonoBehaviour
     public Transform markerOrigin;   // marker referansı
     public Transform worldPoint;     // world'de gösterilecek nokta
 
-    public void RotateLogger()
+    public void UpdateLocation()
     {
         // marker referans sistemine göre tanımlı bir nokta (örneğin x=1 birim ileri)
-        Vector3 localPoint = new Vector3(8, 0, 0);
+        Vector3 localPoint = new Vector3(0, 0, 0);
 
         // marker'ın dünya pozisyonu
         Vector3 T = markerOrigin.position;
