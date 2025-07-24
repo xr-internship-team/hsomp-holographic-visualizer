@@ -12,16 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a1f07dc5afe854f9f12a4194aca3fb, type: 3}
   m_Name: WebGL
   m_EditorClassIdentifier: 
-  features:
-  - {fileID: 5956262223860178630}
+  features: []
   m_renderMode: 1
-  m_latencyOptimization: 0
-  m_autoColorSubmissionMode: 1
-  m_colorSubmissionModes:
-    m_List: 00000000
   m_depthSubmissionMode: 0
-  m_spacewarpMotionVectorTextureFormat: 0
-  m_optimizeBufferDiscards: 0
   m_symmetricProjection: 0
 --- !u!114 &-8581694070431166590
 MonoBehaviour:
@@ -138,17 +131,17 @@ MonoBehaviour:
   m_Name: Standalone
   m_EditorClassIdentifier: 
   features:
+  - {fileID: -1337672720197576087}
   - {fileID: 4143383949672016531}
   - {fileID: -2572852855571028821}
   - {fileID: 3995129668978893358}
   - {fileID: -3420046573009014867}
   - {fileID: -336676172560714563}
   - {fileID: -6539573747191967274}
-  - {fileID: -3373240966191311195}
   - {fileID: 1129272082616514335}
+  - {fileID: -3373240966191311195}
   - {fileID: 5098761558121685748}
   - {fileID: -5053125432322501016}
-  - {fileID: 5126188562231097718}
   - {fileID: 6874785479231511813}
   - {fileID: 3092754880681176686}
   - {fileID: 7505573541250271423}
@@ -157,19 +150,11 @@ MonoBehaviour:
   - {fileID: 1862442660572801023}
   - {fileID: -6771919164223849746}
   - {fileID: -854305522347397730}
+  - {fileID: -3851851298198185382}
   - {fileID: 6095062525739518004}
   - {fileID: -3550778706666271588}
-  - {fileID: 3805126379164868249}
-  - {fileID: -3851851298198185382}
-  - {fileID: -1337672720197576087}
   m_renderMode: 1
-  m_latencyOptimization: 0
-  m_autoColorSubmissionMode: 1
-  m_colorSubmissionModes:
-    m_List: 00000000
   m_depthSubmissionMode: 0
-  m_spacewarpMotionVectorTextureFormat: 0
-  m_optimizeBufferDiscards: 0
   m_symmetricProjection: 0
 --- !u!114 &-7447635073613256850
 MonoBehaviour:
@@ -780,7 +765,6 @@ MonoBehaviour:
   - {fileID: -2815349854178537542}
   - {fileID: 5287090193766596288}
   - {fileID: 1563603838862220810}
-  - {fileID: 445019922232767433}
   - {fileID: 6704529897012960550}
   - {fileID: 7114120359788548865}
   - {fileID: 5716433543009035716}
@@ -789,15 +773,8 @@ MonoBehaviour:
   - {fileID: 1254382877751402446}
   - {fileID: 7774319395825333295}
   - {fileID: -7687911737225282395}
-  - {fileID: 3990360855922194807}
   m_renderMode: 1
-  m_latencyOptimization: 0
-  m_autoColorSubmissionMode: 1
-  m_colorSubmissionModes:
-    m_List: 00000000
   m_depthSubmissionMode: 0
-  m_spacewarpMotionVectorTextureFormat: 0
-  m_optimizeBufferDiscards: 0
   m_symmetricProjection: 0
 --- !u!114 &-336676172560714563
 MonoBehaviour:
@@ -935,13 +912,9 @@ MonoBehaviour:
     enabled: 1
   forceRemoveInternetPermission: 0
   symmetricProjection: 0
-  foveatedRenderingApi: 0
   systemSplashScreen: {fileID: 0}
-  optimizeBufferDiscards: 1
   lateLatchingMode: 0
   lateLatchingDebug: 0
-  optimizeMultiviewRenderRegions: 0
-  spacewarpMotionVectorTextureFormat: 0
 --- !u!114 &1862442660572801023
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1511,17 +1484,17 @@ MonoBehaviour:
   m_Name: WSA
   m_EditorClassIdentifier: 
   features:
+  - {fileID: -2263255073563943979}
   - {fileID: -1955471186684618812}
   - {fileID: -7115117817142368075}
   - {fileID: -7255808737320817125}
   - {fileID: -967903936550539051}
   - {fileID: -7693270871738430684}
   - {fileID: 2110891023554111642}
-  - {fileID: 5836751040488458217}
   - {fileID: -8581694070431166590}
+  - {fileID: 5836751040488458217}
   - {fileID: -3655184608019625411}
   - {fileID: -7847165262517268845}
-  - {fileID: 3478083317002892452}
   - {fileID: -3687603116377438409}
   - {fileID: -1360795067307088195}
   - {fileID: 9002181779331219048}
@@ -1531,16 +1504,8 @@ MonoBehaviour:
   - {fileID: -7447635073613256850}
   - {fileID: -6906368026872019882}
   - {fileID: -5226963369615889049}
-  - {fileID: -8173088843075274273}
-  - {fileID: -2263255073563943979}
   m_renderMode: 1
-  m_latencyOptimization: 0
-  m_autoColorSubmissionMode: 1
-  m_colorSubmissionModes:
-    m_List: 00000000
   m_depthSubmissionMode: 1
-  m_spacewarpMotionVectorTextureFormat: 0
-  m_optimizeBufferDiscards: 0
   m_symmetricProjection: 0
 --- !u!114 &8959023222089713140
 MonoBehaviour:
