@@ -3,6 +3,7 @@ import numpy as np
 from pupil_apriltags import Detector
 import csv
 from datetime import datetime
+from scipy.spatial.transform import Rotation as R
 # Kalibrasyon parametrelerini yükle
 with np.load("calib_params.npz") as data:
     camera_matrix = data["camera_matrix"]
@@ -52,17 +53,9 @@ while True:
         rmat = tag.pose_R
         tvec = tag.pose_t.reshape(3)
 
-        # Örnek veri/ Finds the beta point as getting the alpha point 
-        P_local = np.array([0.0, 1, 1])  # Marker'a göre 1cm sağ, 2cm yukarı bir nokta
-        R = rmat                        # 3x3 rotasyon matrisi
-        T = tvec              # 3x1 translation vektörü
-
-        # Küresel koordinatta noktanın yeri
-        P_global = R @ P_local + T
-
-        print("Global (kamera) sistemine göre nokta:", P_global)
-        cv2.putText(frame, f"Beta Point: {P_global}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        cv2.putText(frame, f"Alpha Point: {P_local}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        r = R.from_matrix(rmat)
+        quat = r.as_quat()  # X, Y, Z, W formatında döner
+        print("Quaternion (x, y, z, w):", quat)
 
         # X, Y, Z eksenlerini çiz
         rvec, _ = cv2.Rodrigues(rmat)
@@ -71,9 +64,6 @@ while True:
 
         print(f"Tag ID: {tag.tag_id}, tag.pose_t: {tag.pose_t}, tag.pose_R: {tag.pose_R}")
         # OpenCV için dönüştür (Rodrigues formatı gerekiyor)
-
-        rvec_cv, _ = cv2.Rodrigues(rvec)
-        tvec_cv = tvec.reshape(3, 1)
         # Print the Tz to window on cv2
         cv2.putText(frame, f"Tz: {tvec[2]}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)   
 
