@@ -34,16 +34,21 @@ public class UdpReceiver : MonoBehaviour
 
                 ReceivedData parsed = JsonUtility.FromJson<ReceivedData>(message);
 
-                if (parsed.rotation_matrix_flat != null && parsed.rotation_matrix_flat.Length == 9)
+                if (parsed.quaternion != null && parsed.quaternion.Length == 4)
                 {
-                    receivedRotation = ConvertFlatMatrixToQuaternion(parsed.rotation_matrix_flat);
+                    receivedRotation = new Quaternion(
+                        parsed.quaternion[0],
+                        parsed.quaternion[1],
+                        parsed.quaternion[2],
+                        parsed.quaternion[3]
+                    );
                 }
 
                 if (parsed.translation != null && parsed.translation.Length == 3)
                 {
                     receivedPosition = new Vector3(
                         parsed.translation[0],
-                        -parsed.translation[1],
+                        parsed.translation[1],
                         parsed.translation[2]
                     );
                 }
@@ -66,24 +71,13 @@ public class UdpReceiver : MonoBehaviour
         }
     }
 
-    Quaternion ConvertFlatMatrixToQuaternion(float[] mat)
-    {
-        Matrix4x4 m = new Matrix4x4();
-        m.m00 = mat[0]; m.m01 = -mat[1]; m.m02 = mat[2];
-        m.m10 = -mat[3]; m.m11 = mat[4]; m.m12 = -mat[5];
-        m.m20 = mat[6]; m.m21 = -mat[7]; m.m22 = mat[8];
-        m.m33 = 1f;
-
-        return m.rotation;
-    }
-
     [Serializable]
     public class ReceivedData
     {
         public string timestamp;
         public int id;
         public float[] translation;
-        public float[] rotation_matrix_flat;
+        public float[] quaternion;
         public float[] beta_point;
         public float[] alpha_point;
     }
