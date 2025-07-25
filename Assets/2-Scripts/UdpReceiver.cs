@@ -11,8 +11,8 @@ public class UdpReceiver : MonoBehaviour
     Thread receiveThread;
 
     public GameObject targetObject;
-    private Quaternion receivedRotation = Quaternion.identity;
-    private Vector3 receivedPosition = Vector3.zero;
+    public Quaternion receivedRotation = Quaternion.identity;
+    public Vector3 receivedPosition = Vector3.zero;
 
     void Start()
     {
@@ -22,7 +22,13 @@ public class UdpReceiver : MonoBehaviour
         receiveThread.Start();
     }
 
-    void ReceiveData()
+    private void Update()
+    {
+        targetObject.transform.position = receivedPosition;
+        targetObject.transform.rotation = receivedRotation;
+    }
+
+    public void ReceiveData()
     {
         IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 12345);
         while (true)
@@ -61,15 +67,7 @@ public class UdpReceiver : MonoBehaviour
             }
         }
     }
-
-    void Update()
-    {
-        if (targetObject != null)
-        {
-            targetObject.transform.position = receivedPosition;
-            targetObject.transform.rotation = receivedRotation;
-        }
-    }
+    
 
     [Serializable]
     public class ReceivedData
@@ -78,7 +76,5 @@ public class UdpReceiver : MonoBehaviour
         public int id;
         public float[] translation;
         public float[] quaternion;
-        public float[] beta_point;
-        public float[] alpha_point;
     }
 }
