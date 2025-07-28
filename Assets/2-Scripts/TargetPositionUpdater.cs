@@ -1,9 +1,10 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class TargetPositionUpdater : MonoBehaviour
 {
-    public Transform userTransform;
-    public Transform simulationCameraTransform;
+    public Transform markerTransform;
+    public Transform objectTransform;
     
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
@@ -21,7 +22,7 @@ public class TargetPositionUpdater : MonoBehaviour
             -originalVector.y,
             -originalVector.z);
 
-        simulationCameraTransform.rotation = userTransform.rotation * Quaternion.Inverse(invertedQuaternion);
-        simulationCameraTransform.position = userTransform.position - simulationCameraTransform.rotation * invertedVector;
+        objectTransform.rotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
+        objectTransform.position = markerTransform.position - objectTransform.rotation * invertedVector;
     }
 }
