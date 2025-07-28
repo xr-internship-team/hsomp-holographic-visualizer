@@ -7,35 +7,49 @@ using UnityEngine;
 
 public class UdpReceiver : MonoBehaviour
 {
-    UdpClient client;
-    Thread receiveThread;
-
     public GameObject targetObject;
     public Quaternion receivedRotation = Quaternion.identity;
     public Vector3 receivedPosition = Vector3.zero;
+    
+    private UdpClient _client;
+    private Thread _receiveThread;
 
-    void Start()
+    #region UnityEventFunctions
+    private void Start()
     {
-        client = new UdpClient(12345);
-        receiveThread = new Thread(ReceiveData);
-        receiveThread.IsBackground = true;
-        receiveThread.Start();
+        _client = new UdpClient(12345);
+        _receiveThread = new Thread(ReceiveData);
+        _receiveThread.IsBackground = true;
+        _receiveThread.Start();
     }
-
+    
     private void Update()
     {
         targetObject.transform.position = receivedPosition;
         targetObject.transform.rotation = receivedRotation;
     }
 
-    public void ReceiveData()
+    private void OnDisable()
     {
-        IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 12345);
+        _receiveThread.Abort();
+    }
+
+    private void OnDestroy()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+    
+    #region PrivateFunctions
+    private void ReceiveData()
+    {
+        var remoteEndPoint = new IPEndPoint(IPAddress.Any, 12345);
         while (true)
         {
             try
             {
-                byte[] data = client.Receive(ref remoteEndPoint);
+                byte[] data = _client.Receive(ref remoteEndPoint);
                 string message = Encoding.UTF8.GetString(data);
 
                 ReceivedData parsed = JsonUtility.FromJson<ReceivedData>(message);
@@ -67,14 +81,5 @@ public class UdpReceiver : MonoBehaviour
             }
         }
     }
-    
-
-    [Serializable]
-    public class ReceivedData
-    {
-        public string timestamp;
-        public int id;
-        public float[] translation;
-        public float[] quaternion;
-    }
+    #endregion
 }

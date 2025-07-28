@@ -6,7 +6,7 @@ public class DataReceiver : MonoBehaviour
     public GameObject marker;
     public TargetPositionUpdater targetPositionUpdater;
     public UdpReceiver receiveData;    
-    void Update()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.L))
         {
@@ -21,4 +21,13 @@ public class DataReceiver : MonoBehaviour
         targetPositionUpdater.CubePositionSetter(positionDif, rotationDif);
         
     }
+
+    private void Deneme()
+    {
+        IReceiver receiver = new TcpReceiver("123456",123456);
+        receiver.CreateClient("123456",123456);
+        
+    }
+    
+    
 }
