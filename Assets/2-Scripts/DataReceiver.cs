@@ -4,7 +4,7 @@ public class DataReceiver : MonoBehaviour
 {
     public GameObject marker;
     public TargetPositionUpdater targetPositionUpdater;
-    public UdpReceiver receiveData;    
+    public UdpDataProcessor receiveData;    
     private void Update()
     {
         var positionDif = receiveData.receivedPosition;
@@ -20,11 +20,5 @@ public class DataReceiver : MonoBehaviour
         }
         */
     }
-
-    private void Deneme()
-    {
-        IReceiver receiver = new TcpReceiver("123456",123456);
-        receiver.CreateClient("123456",123456);
-        
-    }
+    
 }
