@@ -7,7 +7,6 @@ using UnityEngine;
 
 public class UdpDataProcessor : MonoBehaviour
 {
-    public GameObject targetObject;
     public Quaternion receivedRotation = Quaternion.identity;
     public Vector3 receivedPosition = Vector3.zero;
 
@@ -23,15 +22,6 @@ public class UdpDataProcessor : MonoBehaviour
         _client = _clientCreator.Client;
         
         runThread();
-    }
-
-    private void Update()
-    {
-        lock (_lock)
-        {
-            targetObject.transform.position = receivedPosition;
-            targetObject.transform.rotation = receivedRotation;
-        }
     }
 
     private void OnDisable()
@@ -59,27 +49,26 @@ public class UdpDataProcessor : MonoBehaviour
                 string message = Encoding.UTF8.GetString(data);
 
                 ReceivedData parsed = JsonUtility.FromJson<ReceivedData>(message);
-                lock (_lock)
+                
+                if (parsed.quaternion != null && parsed.quaternion.Length == 4)
                 {
-                    if (parsed.quaternion != null && parsed.quaternion.Length == 4)
-                    {
-                        receivedRotation = new Quaternion(
-                            parsed.quaternion[0],
-                            parsed.quaternion[1],
-                            parsed.quaternion[2],
-                            parsed.quaternion[3]
-                        );
-                    }
-
-                    if (parsed.translation != null && parsed.translation.Length == 3)
-                    {
-                        receivedPosition = new Vector3(
-                            parsed.translation[0],
-                            parsed.translation[1],
-                            parsed.translation[2]
-                        );
-                    }
+                    receivedRotation = new Quaternion(
+                        parsed.quaternion[0],
+                        parsed.quaternion[1],
+                        parsed.quaternion[2],
+                        parsed.quaternion[3]
+                    );
                 }
+
+                if (parsed.translation != null && parsed.translation.Length == 3)
+                {
+                    receivedPosition = new Vector3(
+                        parsed.translation[0],
+                        parsed.translation[1],
+                        parsed.translation[2]
+                    );
+                }
+                
                 Debug.Log($"Alınan Pozisyon: {receivedPosition}, Rotasyon: {receivedRotation.eulerAngles}");
             }
             catch (Exception e)
