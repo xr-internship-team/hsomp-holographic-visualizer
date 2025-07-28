@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class DataReceiver : MonoBehaviour
 {
-    public GameObject marker;
     public TargetPositionUpdater targetPositionUpdater;
     public UdpDataProcessor receiveData;    
     private void Update()
