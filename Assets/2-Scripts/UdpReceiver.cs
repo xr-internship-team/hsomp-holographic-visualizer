@@ -5,47 +5,31 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 
-public class UdpReceiver : MonoBehaviour
+public class UdpReceiver : IReceiver
 {
-    public GameObject targetObject;
     public Quaternion receivedRotation = Quaternion.identity;
     public Vector3 receivedPosition = Vector3.zero;
-    
+
+    private int _portNumber;
+    private string _ipAddress;
     private UdpClient _client;
     private Thread _receiveThread;
+    private volatile bool _isRunning = true;
 
-    #region UnityEventFunctions
-    private void Start()
+
+    public UdpReceiver(string ipAddress, int portNumber)
     {
-        _client = new UdpClient(12345);
-        _receiveThread = new Thread(ReceiveData);
-        _receiveThread.IsBackground = true;
-        _receiveThread.Start();
-    }
-    
-    private void Update()
-    {
-        targetObject.transform.position = receivedPosition;
-        targetObject.transform.rotation = receivedRotation;
+        _ipAddress = ipAddress;
+        _portNumber = portNumber;
+        CreateClient(_ipAddress, _portNumber);
+        InitializeReceiver();
     }
 
-    private void OnDisable()
-    {
-        _receiveThread.Abort();
-    }
-
-    private void OnDestroy()
-    {
-        throw new NotImplementedException();
-    }
-
-    #endregion
-    
     #region PrivateFunctions
     private void ReceiveData()
     {
         var remoteEndPoint = new IPEndPoint(IPAddress.Any, 12345);
-        while (true)
+        while (_isRunning)
         {
             try
             {
@@ -80,6 +64,25 @@ public class UdpReceiver : MonoBehaviour
                 Debug.LogError("UDP Hatası: " + e.Message);
             }
         }
+    }
+
+    public void CreateClient(string ipAddress, int portNumber)
+    {
+        _client = new UdpClient(portNumber);
+    }
+
+    public void InitializeReceiver()
+    {
+        _receiveThread = new Thread(ReceiveData);
+        _receiveThread.IsBackground = true;
+        _receiveThread.Start();
+    }
+    
+    public void StopReceiving()
+    {
+        _isRunning = false;
+        _client?.Close();
+        _receiveThread.Abort();
     }
     #endregion
 }

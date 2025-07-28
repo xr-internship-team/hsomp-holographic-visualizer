@@ -5,7 +5,13 @@ public class DataReceiver : MonoBehaviour
     public GameObject outsideCamera;
     public GameObject marker;
     public TargetPositionUpdater targetPositionUpdater;
-    public UdpReceiver receiveData;    
+    public UdpReceiver receiveData;
+
+    void Start()
+    {
+        receiveData = new UdpReceiver("127.0.0.1", 12345);
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.L))
@@ -18,16 +24,15 @@ public class DataReceiver : MonoBehaviour
         
         var positionDif = receiveData.receivedPosition;
         var rotationDif = receiveData.receivedRotation;
+
         targetPositionUpdater.CubePositionSetter(positionDif, rotationDif);
         
     }
 
-    private void Deneme()
+    private void OnDisable()
     {
-        IReceiver receiver = new TcpReceiver("123456",123456);
-        receiver.CreateClient("123456",123456);
-        
+        receiveData.StopReceiving();
     }
-    
-    
+
+
 }
