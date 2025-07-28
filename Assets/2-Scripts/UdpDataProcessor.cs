@@ -1,0 +1,101 @@
+using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using UnityEngine;
+
+public class UdpDataProcessor : MonoBehaviour
+{
+    public GameObject targetObject;
+    public Quaternion receivedRotation = Quaternion.identity;
+    public Vector3 receivedPosition = Vector3.zero;
+
+    private UdpClientCreator _clientCreator;
+    private UdpClient _client;
+    private Thread _receiveThread;
+    private readonly object _lock = new object();
+    
+    #region UnityEventFunctions
+    private void Start()
+    {
+        _clientCreator = new UdpClientCreator(12345);
+        _client = _clientCreator.Client;
+        
+        runThread();
+    }
+
+    private void Update()
+    {
+        lock (_lock)
+        {
+            targetObject.transform.position = receivedPosition;
+            targetObject.transform.rotation = receivedRotation;
+        }
+    }
+
+    private void OnDisable()
+    {
+        _receiveThread?.Abort();
+        _client?.Close();
+    }
+
+    private void OnDestroy()
+    {
+        _receiveThread?.Abort();
+        _client?.Close();
+    }
+    #endregion
+
+    #region PrivateFunctions
+    private void ReceiveData()
+    {
+        var remoteEndPoint = new IPEndPoint(IPAddress.Any, 12345);
+        while (true)
+        {
+            try
+            {
+                byte[] data = _client.Receive(ref remoteEndPoint);
+                string message = Encoding.UTF8.GetString(data);
+
+                ReceivedData parsed = JsonUtility.FromJson<ReceivedData>(message);
+                lock (_lock)
+                {
+                    if (parsed.quaternion != null && parsed.quaternion.Length == 4)
+                    {
+                        receivedRotation = new Quaternion(
+                            parsed.quaternion[0],
+                            parsed.quaternion[1],
+                            parsed.quaternion[2],
+                            parsed.quaternion[3]
+                        );
+                    }
+
+                    if (parsed.translation != null && parsed.translation.Length == 3)
+                    {
+                        receivedPosition = new Vector3(
+                            parsed.translation[0],
+                            parsed.translation[1],
+                            parsed.translation[2]
+                        );
+                    }
+                }
+                Debug.Log($"Alınan Pozisyon: {receivedPosition}, Rotasyon: {receivedRotation.eulerAngles}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("UDP Hatası: " + e.Message);
+            }
+        }
+    }
+    #endregion
+
+    #region startFunctions
+    private void runThread()
+    {
+        _receiveThread = new Thread(ReceiveData);
+        _receiveThread.IsBackground = true;
+        _receiveThread.Start();
+    }
+    #endregion
+}
