@@ -28,5 +28,7 @@ public class TargetPositionUpdater : MonoBehaviour
         objectTransform.position = position;
 
         testObjectTransform.rotation = rotaion;
+
+        Debug.Log("STAJ: Object transformation position and rotation setted.");
     }
 }

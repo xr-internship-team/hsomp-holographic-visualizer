@@ -18,6 +18,7 @@ public class UdpReceiver: IReceiver
     public void CreateClient()
     {
         _client = new UdpClient(_portNumber);
+        Debug.Log("STAJ: Client created.");
     }
 
     public ReceivedData GetData()

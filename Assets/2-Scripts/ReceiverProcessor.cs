@@ -15,6 +15,7 @@ public class ReceiverProcessor : MonoBehaviour
     {
         _receiver = new UdpReceiver(12345);
         RunThread();
+
     }
 
     private void Update()
@@ -23,6 +24,7 @@ public class ReceiverProcessor : MonoBehaviour
         {
             var receivedData = _receivedDataQueue.Dequeue();
             targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(),receivedData.GetRotation());
+            Debug.Log("STAJ: Data dequeued. " + " | " + _receivedDataQueue.Count);
         }
     }
 
@@ -49,6 +51,7 @@ public class ReceiverProcessor : MonoBehaviour
         _receiveThread = new Thread(ReceiveThread);
         _receiveThread.IsBackground = true;
         _receiveThread.Start();
+        Debug.Log("STAJ: Therad ran.");
     }
     
     private void ReceiveThread()
@@ -57,6 +60,7 @@ public class ReceiverProcessor : MonoBehaviour
         {
             var data = _receiver.GetData();
             _receivedDataQueue.Enqueue(data);
+            Debug.Log("STAJ: Data received. | " + data.GetPosition() + " | " + data.GetRotation() );
         }
     }
     
