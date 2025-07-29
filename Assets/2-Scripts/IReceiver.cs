@@ -1,4 +1,8 @@
 ﻿public interface IReceiver
 {
-    public void CreateClient(int portNumber);
+    public void CreateClient();
+
+    public ReceivedData GetData();
+    
+    public void Close();
 }
