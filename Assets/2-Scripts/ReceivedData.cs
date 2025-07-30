@@ -19,7 +19,6 @@ public class ReceivedData
         );
     }
 
-
     public Quaternion GetRotation()
     {
         return new Quaternion(
@@ -28,5 +27,10 @@ public class ReceivedData
             rotationDif[2],
             rotationDif[3]
         );
+    }
+
+    public DateTime GetTimestamp()
+    {
+        return DateTime.Parse(timestamp);
     }
 }

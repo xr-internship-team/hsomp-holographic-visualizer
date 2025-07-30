@@ -6,29 +6,46 @@ public class TargetPositionUpdater : MonoBehaviour
     public Transform objectTransform;
     public Transform testObjectTransform;
     
+    public float smoothingSpeed = 7f;
+
+    private Vector3 smoothedPosition;
+    private Quaternion smoothedRotation;
+
+    private bool isInitialized = false;
+
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
-        var originalQuaternion = rotationDif;
         var invertedQuaternion = new Quaternion(
-            -originalQuaternion.x,
-            -originalQuaternion.y,
-            -originalQuaternion.z,
-            originalQuaternion.w
+            -rotationDif.x,
+            -rotationDif.y,
+            -rotationDif.z,
+            rotationDif.w
         );
-        
-        var originalVector = positionDif;
+
         var invertedVector = new Vector3(
-            -originalVector.x,
-            -originalVector.y,
-            -originalVector.z);
+            positionDif.x,
+            positionDif.y,
+            -positionDif.z);
 
-        var position = markerTransform.position - objectTransform.rotation * invertedVector;
-        var rotaion = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
-        objectTransform.rotation = rotaion;
-        objectTransform.position = position;
+        var targetRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
+        var targetPosition = markerTransform.position - targetRotation * invertedVector;
 
-        testObjectTransform.rotation = rotaion;
+        if (!isInitialized)
+        {
+            smoothedPosition = targetPosition;
+            smoothedRotation = targetRotation;
+            isInitialized = true;
+        }
+        else
+        {
+            smoothedPosition = Vector3.Lerp(smoothedPosition, targetPosition, Time.deltaTime * smoothingSpeed);
+            smoothedRotation = Quaternion.Slerp(smoothedRotation, targetRotation, Time.deltaTime * smoothingSpeed);
+        }
 
-        Debug.Log("STAJ: Object transformation position and rotation setted.");
+        objectTransform.position = smoothedPosition;
+        objectTransform.rotation = smoothedRotation;
+        testObjectTransform.rotation = smoothedRotation;
+
+        Debug.Log("STAJ: Smoothed position and rotation set.");
     }
 }
