@@ -5,6 +5,7 @@ using UnityEngine;
 public class ReceiverProcessor : MonoBehaviour
 {
     public TargetPositionUpdater targetPositionUpdater;
+	public Logger logger;
 
     private IReceiver _receiver;
     private Thread _receiveThread;
@@ -23,6 +24,12 @@ public class ReceiverProcessor : MonoBehaviour
         if (_receivedDataQueue.Count > 0)
         {
             var receivedData = _receivedDataQueue.Dequeue();
+
+			// Logger'a UDP verisi gönder
+    		if (logger != null){
+        		logger.SetExternalTrackingData(receivedData.GetPosition(), receivedData.GetRotation());
+    		}
+
             targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(),receivedData.GetRotation());
             Debug.Log("STAJ: Data dequeued. " + " | " + _receivedDataQueue.Count);
         }
