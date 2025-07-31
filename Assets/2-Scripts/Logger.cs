@@ -34,7 +34,7 @@ public class Logger : MonoBehaviour
         try
         {
             writer = new StreamWriter(filePath, false);
-            writer.WriteLine("Time-ObjectPosX-ObjectPosY,ObjectPosZ,ObjectRotX,ObjectRotY,ObjectRotZ,ObjectRotW," +
+            writer.WriteLine("Time,ObjectPosX,ObjectPosY,ObjectPosZ,ObjectRotX,ObjectRotY,ObjectRotZ,ObjectRotW," +
                              "MarkerPosX,MarkerPosY,MarkerPosZ,MarkerRotX,MarkerRotY,MarkerRotZ,MarkerRotW," +
                              "Distance_Object_Marker," + 
                              "TestObjectRotX,TestObjectRotY,TestObjectRotZ,TestObjectRotW," +
@@ -85,7 +85,7 @@ public class Logger : MonoBehaviour
 
         Quaternion testRot = testObjectTransform.rotation;
 
-        string line = string.Format("{0}-{1}-{2},{3},{4},{5},{6},{7}," +
+        string line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7}," +
                                      "{8},{9},{10},{11},{12},{13},{14}," +
                                      "{15}," +
                                      "{16},{17},{18},{19}," +
