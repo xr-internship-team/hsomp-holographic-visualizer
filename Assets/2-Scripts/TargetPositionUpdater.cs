@@ -23,8 +23,8 @@ public class TargetPositionUpdater : MonoBehaviour
         );
 
         var invertedVector = new Vector3(
-            positionDif.x,
-            positionDif.y,
+            -positionDif.x,
+            -positionDif.y,
             -positionDif.z);
 
         var targetRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
