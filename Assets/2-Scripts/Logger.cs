@@ -14,7 +14,6 @@ public class Logger : MonoBehaviour
 
     private string filePath;
     string folderPath;
-    
 
     private StreamWriter writer;
     private float logInterval = 0.1f;
@@ -26,7 +25,6 @@ public class Logger : MonoBehaviour
         folderPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), "VRLoggerLogs");
         Directory.CreateDirectory(folderPath);
         filePath = Path.Combine(folderPath, "VR_Object_Log.csv");
-
     }
 
     void Start()
@@ -34,11 +32,12 @@ public class Logger : MonoBehaviour
         try
         {
             writer = new StreamWriter(filePath, false);
-            writer.WriteLine("Time,ObjectPosX,ObjectPosY,ObjectPosZ,ObjectRotX,ObjectRotY,ObjectRotZ,ObjectRotW," +
-                             "MarkerPosX,MarkerPosY,MarkerPosZ,MarkerRotX,MarkerRotY,MarkerRotZ,MarkerRotW," +
-                             "Distance_Object_Marker," + 
-                             "TestObjectRotX,TestObjectRotY,TestObjectRotZ,TestObjectRotW," +
-                             "MarkerExternalPosX,MarkerExternalPosY,MarkerExternalPosZ,MarkerExternalRotX,MarkerExternalRotY,MarkerExternalRotZ,MarkerExternalRotW," +
+            writer.WriteLine("Time ObjectPosX ObjectPosY ObjectPosZ ObjectRotX ObjectRotY ObjectRotZ ObjectRotW " +
+                             "MarkerPosX MarkerPosY MarkerPosZ MarkerRotX MarkerRotY MarkerRotZ MarkerRotW " +
+                             "Distance_Object_Marker " + 
+                             "TestObjectRotX TestObjectRotY TestObjectRotZ TestObjectRotW " +
+                             "MarkerExternalPosX MarkerExternalPosY MarkerExternalPosZ " +
+                             "MarkerExternalRotX MarkerExternalRotY MarkerExternalRotZ MarkerExternalRotW " +
                              "Distance_Marker_ExternalCamera");
 
             loggingStarted = true;
@@ -85,11 +84,12 @@ public class Logger : MonoBehaviour
 
         Quaternion testRot = testObjectTransform.rotation;
 
-        string line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7}," +
-                                     "{8},{9},{10},{11},{12},{13},{14}," +
-                                     "{15}," +
-                                     "{16},{17},{18},{19}," +
-                                     "{20},{21},{22},{23},{24},{25},{26}," +
+        string line = string.Format("{0} {1} {2} {3} {4} {5} {6} {7} " +
+                                     "{8} {9} {10} {11} {12} {13} {14} " +
+                                     "{15} " +
+                                     "{16} {17} {18} {19} " +
+                                     "{20} {21} {22} " +
+                                     "{23} {24} {25} {26} " +
                                      "{27}",
                                      time.ToString("F3"),
                                      objectPos.x.ToString("F3"), objectPos.y.ToString("F3"), objectPos.z.ToString("F3"),
@@ -111,7 +111,7 @@ public class Logger : MonoBehaviour
             Debug.LogError("Logger write error: " + ex.Message);
         }
     }
-    
+
     public void SetExternalTrackingData(Vector3 position, Quaternion rotation)
     {
         markerExternalPosition = position;
