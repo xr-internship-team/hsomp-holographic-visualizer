@@ -9,6 +9,7 @@ public class ReceivedData
     public int id;
     public List<float> positionDif;
     public List<float> rotationDif;
+
     public Vector3 GetPosition()
     {
         return new Vector3(
@@ -28,8 +29,4 @@ public class ReceivedData
             rotationDif[3]
         );
     }
-
-
-
-
 }

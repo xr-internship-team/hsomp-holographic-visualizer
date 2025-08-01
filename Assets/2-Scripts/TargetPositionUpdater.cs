@@ -2,26 +2,33 @@ using UnityEngine;
 
 public class TargetPositionUpdater : MonoBehaviour
 {
-    public Transform userTransform;
-    public Transform simulationCameraTransform;
+    public Transform markerTransform;
+    public Transform objectTransform;
+    public Transform testObjectTransform;
     
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
-        Quaternion originalQuaternion = rotationDif;
-        Quaternion invertedQuaternion = new Quaternion(
+        var originalQuaternion = rotationDif;
+        var invertedQuaternion = new Quaternion(
             -originalQuaternion.x,
             -originalQuaternion.y,
             -originalQuaternion.z,
             originalQuaternion.w
         );
         
-        Vector3 originalVector = positionDif;
-        Vector3 invertedVector = new Vector3(
+        var originalVector = positionDif;
+        var invertedVector = new Vector3(
             -originalVector.x,
             -originalVector.y,
             -originalVector.z);
 
-        simulationCameraTransform.rotation = userTransform.rotation * Quaternion.Inverse(invertedQuaternion);
-        simulationCameraTransform.position = userTransform.position - simulationCameraTransform.rotation * invertedVector;
+        var position = markerTransform.position - objectTransform.rotation * invertedVector;
+        var rotaion = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
+        objectTransform.rotation = rotaion;
+        objectTransform.position = position;
+
+        testObjectTransform.rotation = rotaion;
+
+        Debug.Log("STAJ: Object transformation position and rotation setted.");
     }
 }
