@@ -8,7 +8,7 @@ public class ReceiverProcessor : MonoBehaviour
 
     private IReceiver _receiver;
     private Thread _receiveThread;
-    private Queue<ReceivedData> _receivedDataQueue = new(20);
+    private Queue<ReceivedData> _receivedDataQueue = new(40);
     
     #region UnityEventFunctions
     private void Start()

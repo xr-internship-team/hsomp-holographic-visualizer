@@ -3,8 +3,9 @@ using UnityEngine;
 
 public class Logger : MonoBehaviour
 {
-    public GameObject trackedObject;        // Takip edilen obje (örneğin küp)
+    public GameObject trackedObject;        // Marker hesaplamasının uygulancağı küp
     public Transform playspaceTransform;    // MixedRealityPlayspace'in Transform'u
+    public GameObject refObject;            // Manuel şekilde koyacağımız küp.
 
     private string filePath;
     private StreamWriter writer;
@@ -20,7 +21,10 @@ public class Logger : MonoBehaviour
         {
             filePath = Path.Combine(Application.temporaryCachePath, "DistanceLog.csv");
             writer = new StreamWriter(filePath, false);
-            writer.WriteLine("Time,ObjectX,ObjectY,ObjectZ,CameraX,CameraY,CameraZ,InitialDistance,CurrentDistance,ChangeInDistance");
+            writer.WriteLine("Time;ObjectX;ObjectY;ObjectZ;ObjectRotX;ObjectRotY;ObjectRotZ;ObjectRotW;" +
+                "RefX;RefY;RefZ;RefRotX;RefRotY;RefRotZ;RefRotW;" +
+                "CameraX;CameraY;CameraZ;CameraRotX;CameraRotY;CameraRotZ;CameraRotW;" +
+                "InitialDistance;CurrentDistance;ChangeInDistance;RefToTrackedObjDistance;RefToTrackedObjRotationDiff");
 
             if (trackedObject != null && playspaceTransform != null)
             {
@@ -64,17 +68,45 @@ public class Logger : MonoBehaviour
         }
 
         Vector3 objPos = trackedObject.transform.position;
+        Quaternion objRot = trackedObject.transform.rotation;
+
         Vector3 camPos = playspaceTransform.position;
+        Quaternion camRot = playspaceTransform.rotation;
+
+        Vector3 refPos = refObject != null ? refObject.transform.position : Vector3.zero;
+        Quaternion refRot = refObject != null ? refObject.transform.rotation : Quaternion.identity;
+
+        float refToTrackedDistance = -1f;
+        if (refObject != null && trackedObject != null)
+        {
+            refToTrackedDistance = Vector3.Distance(refObject.transform.position, trackedObject.transform.position);
+        }
+
+        float rotationDifference = -1f;
+        if (refObject != null && trackedObject != null)
+        {
+            rotationDifference = Quaternion.Angle(refRot, objRot);
+        }
+
 
         float currentDistance = Vector3.Distance(objPos, camPos);
         float changeInDistance = Mathf.Abs(initialDistance - currentDistance);
         float time = Time.time;
 
-        string line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}",
-            time.ToString("F3"),
-            objPos.x.ToString("F3"), objPos.y.ToString("F3"), objPos.z.ToString("F3"),
-            camPos.x.ToString("F3"), camPos.y.ToString("F3"), camPos.z.ToString("F3"),
-            initialDistance.ToString("F3"), currentDistance.ToString("F3"), changeInDistance.ToString("F3"));
+        string[] values = new string[]
+        {
+        time.ToString("F3"),
+        objPos.x.ToString("F3"), objPos.y.ToString("F3"), objPos.z.ToString("F3"),
+        objRot.x.ToString("F3"), objRot.y.ToString("F3"), objRot.z.ToString("F3"), objRot.w.ToString("F3"),
+        refPos.x.ToString("F3"), refPos.y.ToString("F3"), refPos.z.ToString("F3"),
+        refRot.x.ToString("F3"), refRot.y.ToString("F3"), refRot.z.ToString("F3"), refRot.w.ToString("F3"),
+        camPos.x.ToString("F3"), camPos.y.ToString("F3"), camPos.z.ToString("F3"),
+        camRot.x.ToString("F3"), camRot.y.ToString("F3"), camRot.z.ToString("F3"), camRot.w.ToString("F3"),
+        initialDistance.ToString("F3"), currentDistance.ToString("F3"), changeInDistance.ToString("F3"),
+        refToTrackedDistance.ToString("F3"), rotationDifference.ToString("F3")
+        };
+        string line = string.Join(";", values);
+
 
         try
         {
