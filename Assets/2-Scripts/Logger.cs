@@ -1,11 +1,14 @@
 using System.IO;
 using UnityEngine;
+using Microsoft.MixedReality.Toolkit.UI;
 
 public class Logger : MonoBehaviour
 {
     public GameObject trackedObject;        // Marker hesaplamasının uygulancağı küp
     public Transform playspaceTransform;    // MixedRealityPlayspace'in Transform'u
     public GameObject refObject;            // Manuel şekilde koyacağımız küp.
+    public Interactable controlButton1;
+
 
     private string filePath;
     private StreamWriter writer;
@@ -15,16 +18,21 @@ public class Logger : MonoBehaviour
     private bool loggingStarted = false;
     private float initialDistance = 0f;
 
+    private int timeSign = 0;
+
     void Start()
     {
+        controlButton1.OnClick.AddListener(ButtonClicked);
+
         try
         {
             filePath = Path.Combine(Application.temporaryCachePath, "DistanceLog.csv");
+            Debug.Log("file path: " + filePath);
             writer = new StreamWriter(filePath, false);
             writer.WriteLine("Time;ObjectX;ObjectY;ObjectZ;ObjectRotX;ObjectRotY;ObjectRotZ;ObjectRotW;" +
                 "RefX;RefY;RefZ;RefRotX;RefRotY;RefRotZ;RefRotW;" +
                 "CameraX;CameraY;CameraZ;CameraRotX;CameraRotY;CameraRotZ;CameraRotW;" +
-                "InitialDistance;CurrentDistance;ChangeInDistance;RefToTrackedObjDistance;RefToTrackedObjRotationDiff");
+                "InitialDistance;CurrentDistance;ChangeInDistance;RefToTrackedObjDistance;RefToTrackedObjRotationDiff;TimeSign");
 
             if (trackedObject != null && playspaceTransform != null)
             {
@@ -44,6 +52,12 @@ public class Logger : MonoBehaviour
         {
             Debug.LogError("Logger başlatılamadı: " + ex.Message);
         }
+    }
+
+    private void ButtonClicked()
+    {
+        timeSign += 1;
+        Debug.Log("Button clicked. Time Sign: " + timeSign);
     }
 
     void Update()
@@ -103,7 +117,7 @@ public class Logger : MonoBehaviour
         camPos.x.ToString("F3"), camPos.y.ToString("F3"), camPos.z.ToString("F3"),
         camRot.x.ToString("F3"), camRot.y.ToString("F3"), camRot.z.ToString("F3"), camRot.w.ToString("F3"),
         initialDistance.ToString("F3"), currentDistance.ToString("F3"), changeInDistance.ToString("F3"),
-        refToTrackedDistance.ToString("F3"), rotationDifference.ToString("F3")
+        refToTrackedDistance.ToString("F3"), rotationDifference.ToString("F3"), timeSign.ToString("F3")
         };
         string line = string.Join(";", values);
 
