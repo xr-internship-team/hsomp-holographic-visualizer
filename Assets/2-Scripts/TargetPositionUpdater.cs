@@ -4,7 +4,6 @@ public class TargetPositionUpdater : MonoBehaviour
 {
     public Transform markerTransform;
     public Transform objectTransform;
-    public Transform testObjectTransform;
     
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
@@ -27,7 +26,7 @@ public class TargetPositionUpdater : MonoBehaviour
         objectTransform.rotation = rotaion;
         objectTransform.position = position;
 
-        testObjectTransform.rotation = rotaion;
+
 
         Debug.Log("STAJ: Object transformation position and rotation setted.");
     }
