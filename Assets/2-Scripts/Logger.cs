@@ -1,14 +1,16 @@
+using System;
 using System.IO;
+using System.Threading;
+using System.Collections.Concurrent;
 using UnityEngine;
 using Microsoft.MixedReality.Toolkit.UI;
 
 public class Logger : MonoBehaviour
 {
-    public GameObject trackedObject;        // Marker hesaplamasının uygulancağı küp
-    public Transform playspaceTransform;    // MixedRealityPlayspace'in Transform'u
-    public GameObject refObject;            // Manuel şekilde koyacağımız küp.
+    public GameObject trackedObject;
+    public Transform playspaceTransform;
+    public GameObject refObject;
     public Interactable controlButton1;
-
 
     private string filePath;
     private StreamWriter writer;
@@ -17,8 +19,12 @@ public class Logger : MonoBehaviour
     private float timeSinceLastLog = 0f;
     private bool loggingStarted = false;
     private float initialDistance = 0f;
-
     private int timeSign = 0;
+
+    private Thread logThread;
+    private bool isLoggingThreadRunning = true;
+
+    private ConcurrentQueue<LogDataEntry> logQueue = new ConcurrentQueue<LogDataEntry>();
 
     void Start()
     {
@@ -26,38 +32,29 @@ public class Logger : MonoBehaviour
 
         try
         {
-            filePath = Path.Combine(Application.temporaryCachePath, "DistanceLog.csv");
-            Debug.Log("file path: " + filePath);
+            filePath = Path.Combine(Application.persistentDataPath, "DistanceLog.csv");
+            Debug.Log("Logger path: " + filePath);
             writer = new StreamWriter(filePath, false);
             writer.WriteLine("Time;ObjectX;ObjectY;ObjectZ;ObjectRotX;ObjectRotY;ObjectRotZ;ObjectRotW;" +
-                "RefX;RefY;RefZ;RefRotX;RefRotY;RefRotZ;RefRotW;" +
-                "CameraX;CameraY;CameraZ;CameraRotX;CameraRotY;CameraRotZ;CameraRotW;" +
-                "InitialDistance;CurrentDistance;ChangeInDistance;RefToTrackedObjDistance;RefToTrackedObjRotationDiff;TimeSign");
+                             "RefX;RefY;RefZ;RefRotX;RefRotY;RefRotZ;RefRotW;" +
+                             "CameraX;CameraY;CameraZ;CameraRotX;CameraRotY;CameraRotZ;CameraRotW;" +
+                             "InitialDistance;CurrentDistance;ChangeInDistance;RefToTrackedObjDistance;RefToTrackedObjRotationDiff;TimeSign");
 
             if (trackedObject != null && playspaceTransform != null)
             {
-                Vector3 objPos = trackedObject.transform.position;
-                Vector3 camPos = playspaceTransform.position;
-                initialDistance = Vector3.Distance(objPos, camPos);
-            }
-            else
-            {
-                Debug.LogWarning("Logger: trackedObject veya playspaceTransform atanmamış.");
+                initialDistance = Vector3.Distance(trackedObject.transform.position, playspaceTransform.position);
             }
 
             loggingStarted = true;
-            Debug.Log("Logging started: " + filePath);
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError("Logger başlatılamadı: " + ex.Message);
-        }
-    }
+            logThread = new Thread(WriteLogThread);
+            logThread.Start();
 
-    private void ButtonClicked()
-    {
-        timeSign += 1;
-        Debug.Log("Button clicked. Time Sign: " + timeSign);
+            Debug.Log("Logger started.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Logger init error: " + ex.Message);
+        }
     }
 
     void Update()
@@ -68,83 +65,120 @@ public class Logger : MonoBehaviour
 
         if (timeSinceLastLog >= logInterval)
         {
-            LogData();
+            EnqueueLogData();
             timeSinceLastLog = 0f;
         }
     }
 
-    void LogData()
+    private void ButtonClicked()
     {
-        if (trackedObject == null || playspaceTransform == null)
+        timeSign += 1;
+        Debug.Log("Logger button clicked. TimeSign = " + timeSign);
+    }
+
+    void EnqueueLogData()
+    {
+        if (trackedObject == null || playspaceTransform == null) return;
+
+        LogDataEntry entry = new LogDataEntry
         {
-            Debug.LogWarning("LogData: trackedObject veya playspaceTransform null.");
-            return;
-        }
-
-        Vector3 objPos = trackedObject.transform.position;
-        Quaternion objRot = trackedObject.transform.rotation;
-
-        Vector3 camPos = playspaceTransform.position;
-        Quaternion camRot = playspaceTransform.rotation;
-
-        Vector3 refPos = refObject != null ? refObject.transform.position : Vector3.zero;
-        Quaternion refRot = refObject != null ? refObject.transform.rotation : Quaternion.identity;
-
-        float refToTrackedDistance = -1f;
-        if (refObject != null && trackedObject != null)
-        {
-            refToTrackedDistance = Vector3.Distance(refObject.transform.position, trackedObject.transform.position);
-        }
-
-        float rotationDifference = -1f;
-        if (refObject != null && trackedObject != null)
-        {
-            rotationDifference = Quaternion.Angle(refRot, objRot);
-        }
-
-
-        float currentDistance = Vector3.Distance(objPos, camPos);
-        float changeInDistance = Mathf.Abs(initialDistance - currentDistance);
-        float time = Time.time;
-
-        string[] values = new string[]
-        {
-        time.ToString("F3"),
-        objPos.x.ToString("F3"), objPos.y.ToString("F3"), objPos.z.ToString("F3"),
-        objRot.x.ToString("F3"), objRot.y.ToString("F3"), objRot.z.ToString("F3"), objRot.w.ToString("F3"),
-        refPos.x.ToString("F3"), refPos.y.ToString("F3"), refPos.z.ToString("F3"),
-        refRot.x.ToString("F3"), refRot.y.ToString("F3"), refRot.z.ToString("F3"), refRot.w.ToString("F3"),
-        camPos.x.ToString("F3"), camPos.y.ToString("F3"), camPos.z.ToString("F3"),
-        camRot.x.ToString("F3"), camRot.y.ToString("F3"), camRot.z.ToString("F3"), camRot.w.ToString("F3"),
-        initialDistance.ToString("F3"), currentDistance.ToString("F3"), changeInDistance.ToString("F3"),
-        refToTrackedDistance.ToString("F3"), rotationDifference.ToString("F3"), timeSign.ToString("F3")
+            timestamp = Time.time,
+            objPos = trackedObject.transform.position,
+            objRot = trackedObject.transform.rotation,
+            camPos = playspaceTransform.position,
+            camRot = playspaceTransform.rotation,
+            initialDistance = initialDistance,
+            currentDistance = Vector3.Distance(trackedObject.transform.position, playspaceTransform.position),
+            timeSign = timeSign
         };
-        string line = string.Join(";", values);
 
+        entry.changeInDistance = Mathf.Abs(entry.initialDistance - entry.currentDistance);
 
-        try
+        if (refObject != null)
         {
-            writer.WriteLine(line);
+            entry.refPos = refObject.transform.position;
+            entry.refRot = refObject.transform.rotation;
+            entry.refToTrackedDistance = Vector3.Distance(entry.refPos, entry.objPos);
+            entry.rotationDifference = Quaternion.Angle(entry.refRot, entry.objRot);
         }
-        catch (System.Exception ex)
+        else
         {
-            Debug.LogError("Logger yazma hatası: " + ex.Message);
+            entry.refPos = Vector3.zero;
+            entry.refRot = Quaternion.identity;
+            entry.refToTrackedDistance = -1f;
+            entry.rotationDifference = -1f;
+        }
+
+        logQueue.Enqueue(entry);
+    }
+
+    private void WriteLogThread()
+    {
+        while (isLoggingThreadRunning)
+        {
+            while (logQueue.TryDequeue(out LogDataEntry entry))
+            {
+                string[] values = new string[]
+                {
+                    entry.timestamp.ToString("F3"),
+                    entry.objPos.x.ToString("F3"), entry.objPos.y.ToString("F3"), entry.objPos.z.ToString("F3"),
+                    entry.objRot.x.ToString("F3"), entry.objRot.y.ToString("F3"), entry.objRot.z.ToString("F3"), entry.objRot.w.ToString("F3"),
+                    entry.refPos.x.ToString("F3"), entry.refPos.y.ToString("F3"), entry.refPos.z.ToString("F3"),
+                    entry.refRot.x.ToString("F3"), entry.refRot.y.ToString("F3"), entry.refRot.z.ToString("F3"), entry.refRot.w.ToString("F3"),
+                    entry.camPos.x.ToString("F3"), entry.camPos.y.ToString("F3"), entry.camPos.z.ToString("F3"),
+                    entry.camRot.x.ToString("F3"), entry.camRot.y.ToString("F3"), entry.camRot.z.ToString("F3"), entry.camRot.w.ToString("F3"),
+                    entry.initialDistance.ToString("F3"), entry.currentDistance.ToString("F3"), entry.changeInDistance.ToString("F3"),
+                    entry.refToTrackedDistance.ToString("F3"), entry.rotationDifference.ToString("F3"), entry.timeSign.ToString("F3")
+                };
+
+                string line = string.Join(";", values);
+
+                try
+                {
+                    writer?.WriteLine(line);
+                    writer?.Flush(); // Anında diske yaz, buffer büyümesin
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError("Logger write error: " + ex.Message);
+                }
+            }
+
+            Thread.Sleep(10); // CPU tasarrufu için
         }
     }
 
     private void OnApplicationQuit()
     {
+        isLoggingThreadRunning = false;
+        logThread?.Join(); // Thread'in bitmesini bekle
+
         try
         {
-            if (writer != null)
-            {
-                writer.Close();
-                Debug.Log("Kayıt durduruldu ve dosya kapatıldı.");
-            }
+            writer?.Close();
+            Debug.Log("Logger file closed.");
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
-            Debug.LogError("Dosya kapatılırken hata oluştu: " + ex.Message);
+            Debug.LogError("Logger file close error: " + ex.Message);
         }
+    }
+
+    // Veri yapısı
+    private struct LogDataEntry
+    {
+        public float timestamp;
+        public Vector3 objPos;
+        public Quaternion objRot;
+        public Vector3 refPos;
+        public Quaternion refRot;
+        public Vector3 camPos;
+        public Quaternion camRot;
+        public float initialDistance;
+        public float currentDistance;
+        public float changeInDistance;
+        public float refToTrackedDistance;
+        public float rotationDifference;
+        public int timeSign;
     }
 }
