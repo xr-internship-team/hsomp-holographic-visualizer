@@ -4,13 +4,16 @@ using System.Threading;
 using System.Collections.Concurrent;
 using UnityEngine;
 using Microsoft.MixedReality.Toolkit.UI;
+using TMPro;
 
 public class Logger : MonoBehaviour
 {
     public GameObject trackedObject;
     public Transform playspaceTransform;
     public GameObject refObject;
+
     public Interactable controlButton1;
+    public TextMeshPro controlButton1Text;
 
     private string filePath;
     private StreamWriter writer;
@@ -29,7 +32,6 @@ public class Logger : MonoBehaviour
     void Start()
     {
         controlButton1.OnClick.AddListener(ButtonClicked);
-
         try
         {
             filePath = Path.Combine(Application.persistentDataPath, "DistanceLog.csv");
@@ -74,7 +76,10 @@ public class Logger : MonoBehaviour
     {
         timeSign += 1;
         Debug.Log("Logger button clicked. TimeSign = " + timeSign);
+        controlButton1Text.text = "TimeSign: " + timeSign;
     }
+
+
 
     void EnqueueLogData()
     {
