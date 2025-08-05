@@ -5,12 +5,13 @@ using UnityEngine;
 public class ReceiverProcessor : MonoBehaviour
 {
     public TargetPositionUpdater targetPositionUpdater;
+    public Logger logger;
 
     private IReceiver _receiver;
     private Thread _receiveThread;
     private Queue<ReceivedData> _receivedDataQueue = new(40);
-
-    public Logger logger;
+    
+    private double _lastTimestamp; // epoch timestamp olarak
 
     #region UnityEventFunctions
     private void Start()
@@ -21,13 +22,16 @@ public class ReceiverProcessor : MonoBehaviour
 
     private void Update()
     {
-        if (_receivedDataQueue.Count > 0)
+        lock (_receivedDataQueue)
         {
-            var receivedData = _receivedDataQueue.Dequeue();
-            targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(),receivedData.GetRotation());
-
-            Debug.Log("STAJ: Data dequeued. " + " | " + _receivedDataQueue.Count);
+            if (_receivedDataQueue.Count > 0)
+            {
+                var receivedData = _receivedDataQueue.Dequeue();
+                targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(), receivedData.GetRotation());
+            }
         }
+        //Debug.Log("STAJ: Data dequeued. " + " | " + _receivedDataQueue.Count);
+        
     }
 
     private void OnDisable()
@@ -61,8 +65,22 @@ public class ReceiverProcessor : MonoBehaviour
         while (true)
         {
             var data = _receiver.GetData();
-            _receivedDataQueue.Enqueue(data);
-            Debug.Log("STAJ: Data received. | " + data.GetPosition() + " | " + data.GetRotation());
+            double dataTime = data.timestamp; 
+            // Debug.Log($"STAJ: Data received. Timestamp: {data.timestamp} | Epoch: {dataTime} | Pos: {data.GetPosition()} | Rot: {data.GetRotation()}");
+            
+            if (dataTime > _lastTimestamp) 
+            {
+                lock (_receivedDataQueue)
+                {
+                    _receivedDataQueue.Enqueue(data);
+                }
+                _lastTimestamp = dataTime;
+                // Debug.Log($"STAJ: Accepted timestamp: {dataTime}");
+            }
+            else
+            {
+                Debug.LogWarning($"STAJ: Rejected outdated data. Timestamp: {dataTime}, Last: {_lastTimestamp}");
+            }
         }
     }
     

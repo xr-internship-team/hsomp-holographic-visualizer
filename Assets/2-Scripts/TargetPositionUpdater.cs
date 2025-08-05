@@ -28,6 +28,6 @@ public class TargetPositionUpdater : MonoBehaviour
 
 
 
-        Debug.Log("STAJ: Object transformation position and rotation setted.");
+        // Debug.Log("STAJ: Object transformation position and rotation setted.");
     }
 }

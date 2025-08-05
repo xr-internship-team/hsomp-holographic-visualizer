@@ -5,7 +5,7 @@ using UnityEngine;
 [Serializable] 
 public class ReceivedData
 {
-    public string timestamp;
+    public double timestamp;
     public int id;
     public List<float> positionDif;
     public List<float> rotationDif;
