@@ -3,17 +3,12 @@ using System.IO;
 using System.Threading;
 using System.Collections.Concurrent;
 using UnityEngine;
-using Microsoft.MixedReality.Toolkit.UI;
-using TMPro;
 
 public class Logger : MonoBehaviour
 {
     public GameObject trackedObject;
     public Transform playspaceTransform;
     public GameObject refObject;
-
-    public Interactable controlButton1;
-    public TextMeshPro controlButton1Text;
 
     private string filePath;
     private StreamWriter writer;
@@ -29,9 +24,27 @@ public class Logger : MonoBehaviour
 
     private ConcurrentQueue<LogDataEntry> logQueue = new ConcurrentQueue<LogDataEntry>();
 
+    // Veri yapısı
+    private struct LogDataEntry
+    {
+        public float timestamp;
+        public Vector3 objPos;
+        public Quaternion objRot;
+        public Vector3 refPos;
+        public Quaternion refRot;
+        public Vector3 camPos;
+        public Quaternion camRot;
+        public float initialDistance;
+        public float currentDistance;
+        public float changeInDistance;
+        public float refToTrackedDistance;
+        public float rotationDifference;
+        public int timeSign;
+    }
+
+    #region UnityEventFunctions
     void Start()
     {
-        controlButton1.OnClick.AddListener(ButtonClicked);
         try
         {
             filePath = Path.Combine(Application.persistentDataPath, "DistanceLog.csv");
@@ -72,14 +85,24 @@ public class Logger : MonoBehaviour
         }
     }
 
-    private void ButtonClicked()
+    private void OnApplicationQuit()
     {
-        timeSign += 1;
-        Debug.Log("Logger button clicked. TimeSign = " + timeSign);
-        controlButton1Text.text = "TimeSign: " + timeSign;
+        isLoggingThreadRunning = false;
+        logThread?.Join(); // Thread'in bitmesini bekle
+
+        try
+        {
+            writer?.Close();
+            Debug.Log("Logger file closed.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Logger file close error: " + ex.Message);
+        }
     }
+    #endregion
 
-
+    #region PrivateFunctions
 
     void EnqueueLogData()
     {
@@ -152,38 +175,21 @@ public class Logger : MonoBehaviour
             Thread.Sleep(10); // CPU tasarrufu için
         }
     }
+    #endregion
 
-    private void OnApplicationQuit()
+    #region GetterSetter
+
+    public void SetTimeSign(int value)
     {
-        isLoggingThreadRunning = false;
-        logThread?.Join(); // Thread'in bitmesini bekle
-
-        try
-        {
-            writer?.Close();
-            Debug.Log("Logger file closed.");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("Logger file close error: " + ex.Message);
-        }
+        timeSign = value;
+        Debug.Log("Logger timeSign updated externally: " + timeSign);
     }
 
-    // Veri yapısı
-    private struct LogDataEntry
+    public int GetTimeSign()
     {
-        public float timestamp;
-        public Vector3 objPos;
-        public Quaternion objRot;
-        public Vector3 refPos;
-        public Quaternion refRot;
-        public Vector3 camPos;
-        public Quaternion camRot;
-        public float initialDistance;
-        public float currentDistance;
-        public float changeInDistance;
-        public float refToTrackedDistance;
-        public float rotationDifference;
-        public int timeSign;
+        return timeSign;
     }
+    #endregion
+
+
 }

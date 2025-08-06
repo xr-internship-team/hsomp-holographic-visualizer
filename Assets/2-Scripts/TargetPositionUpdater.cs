@@ -8,7 +8,7 @@ public class TargetPositionUpdater : MonoBehaviour
     private Vector3 _targetPosition;
     private Quaternion _targetRotation;
 
-    public float smoothingSpeed = 5f; // yumuþaklýk seviyesi (arttýrýrsan daha hýzlý geçer)
+    private float smoothingSpeed = 5f; // yumuþaklýk seviyesi (arttýrýrsan daha hýzlý geçer)
 
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
@@ -28,8 +28,6 @@ public class TargetPositionUpdater : MonoBehaviour
 
         _targetPosition = markerTransform.position - objectTransform.rotation * invertedVector;
         _targetRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
-
-        Debug.Log("STAJ: Target position and rotation updated.");
     }
 
     private void Update()
@@ -47,5 +45,15 @@ public class TargetPositionUpdater : MonoBehaviour
             _targetRotation,
             Time.deltaTime * smoothingSpeed
         );
+    }
+
+    public void SetSmoothingSpeed(float value)
+    {
+        smoothingSpeed = value;
+        Debug.Log("Smooth Level updated: " + smoothingSpeed);
+    }
+    public float GetSmoothingSpeed()
+    {
+        return smoothingSpeed;
     }
 }

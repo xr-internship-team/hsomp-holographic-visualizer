@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
-using Microsoft.MixedReality.Toolkit.UI;
-using TMPro;
 
 public class ReceiverProcessor : MonoBehaviour
 {
@@ -14,96 +12,94 @@ public class ReceiverProcessor : MonoBehaviour
 
     private double _lastAppliedTimestamp = 0;
 
+    private readonly object _queueLock = new();
 
-    public Interactable smoothLevelButtonInc;
-    public Interactable smoothLevelButtonDec;
-
-    public TextMeshPro smoothLevelButtonText;
+    private bool _isRunning = false;
 
     #region UnityEventFunctions
     private void Start()
     {
-        smoothLevelButtonInc.OnClick.AddListener(SmoothIncButtonClicked);
-        smoothLevelButtonDec.OnClick.AddListener(SmoothDecButtonClicked);
-
-
         _receiver = new UdpReceiver(12345);
         RunThread();
     }
 
     private void Update()
     {
-        if (_receivedDataQueue.Count > 0)
+        lock (_queueLock)
         {
-            var receivedData = _receivedDataQueue.Dequeue();
-
-            double incomingTimestamp = receivedData.GetTimeStamp();
-
-            // Sýra dýþý gelen paketi atla
-            if (incomingTimestamp > _lastAppliedTimestamp)
+            if (_receivedDataQueue.Count > 0)
             {
-                targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(), receivedData.GetRotation());
-                _lastAppliedTimestamp = incomingTimestamp;
+                var receivedData = _receivedDataQueue.Dequeue();
 
-                Debug.Log($"STAJ: Applied new data | Timestamp: {incomingTimestamp}");
-            }
-            else
-            {
-                Debug.LogWarning($"STAJ: Skipped outdated data | Incoming: {incomingTimestamp} < Last: {_lastAppliedTimestamp}");
+                double incomingTimestamp = receivedData.GetTimeStamp();
+
+                // Sýra dýþý gelen paketi atla
+                if (incomingTimestamp > _lastAppliedTimestamp)
+                {
+                    targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(), receivedData.GetRotation());
+                    Debug.Log($"STAJ: Applied new data | Incoming: {incomingTimestamp}, Last: {_lastAppliedTimestamp}, Diff: {(incomingTimestamp - _lastAppliedTimestamp) * 1000.0:F2} ms");
+
+                    _lastAppliedTimestamp = incomingTimestamp;
+
+                }
+                else
+                {
+                    Debug.LogWarning($"STAJ: Skipped outdated data | Incoming: {incomingTimestamp} < Last: {_lastAppliedTimestamp}");
+                }
             }
         }
     }
 
-    private void SmoothIncButtonClicked()
-    {
-        targetPositionUpdater.smoothingSpeed += 1;
-        smoothLevelButtonText.text = "Smoothing Level: " + targetPositionUpdater.smoothingSpeed;
-        Debug.Log("Inc button clicked. smooth = " + targetPositionUpdater.smoothingSpeed);
-
-    }
-    private void SmoothDecButtonClicked()
-    {
-        targetPositionUpdater.smoothingSpeed -= 1;
-        smoothLevelButtonText.text = "Smoothing Level: " + targetPositionUpdater.smoothingSpeed;
-        Debug.Log("Dec button clicked. smooth = " + targetPositionUpdater.smoothingSpeed);
-
-    }
-
     private void OnDisable()
     {
-        _receiver.Close();
-        _receiveThread?.Abort();
-        StopAllCoroutines();
+        StopReceiverThread();
     }
 
     private void OnDestroy()
     {
-        _receiver.Close();
-        _receiveThread?.Abort();
-        StopAllCoroutines();
+        StopReceiverThread();
     }
-    
     #endregion
 
     #region PrivateFunctions
+    private void StopReceiverThread()
+    {
+        _isRunning = false;
+        _receiver.Close();
 
+        if (_receiveThread != null && _receiveThread.IsAlive)
+        {
+            _receiveThread.Join(); // Thread düzgün þekilde kapanana kadar bekle
+        }
+
+        StopAllCoroutines();
+    }
     private void RunThread()
     {
+        _isRunning = true;
         _receiveThread = new Thread(ReceiveThread);
         _receiveThread.IsBackground = true;
         _receiveThread.Start();
         Debug.Log("STAJ: Thread ran.");
     }
-    
+
     private void ReceiveThread()
     {
-        while (true)
+        while (_isRunning)
         {
             var data = _receiver.GetData();
-            _receivedDataQueue.Enqueue(data);
-            Debug.Log("STAJ: Data received. | position: " + data.GetPosition() + " | rotation: " + data.GetRotation() + " | queue count: " + _receivedDataQueue.Count);
+
+            if (data != null)
+            {
+                lock (_queueLock)
+                {
+                    _receivedDataQueue.Enqueue(data);
+                }
+
+                Debug.Log("STAJ: Data received. | position: " + data.GetPosition() + " | rotation: " + data.GetRotation() + " | queue count: " + _receivedDataQueue.Count);
+            }
         }
     }
-    
+
     #endregion
 }
