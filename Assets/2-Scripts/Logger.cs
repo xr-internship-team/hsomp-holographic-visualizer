@@ -1,6 +1,7 @@
 using System.IO;
 using UnityEngine;
 using Microsoft.MixedReality.Toolkit.UI;
+using TMPro;
 
 public class Logger : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class Logger : MonoBehaviour
     public Transform playspaceTransform;    // MixedRealityPlayspace'in Transform'u
     public GameObject refObject;            // Manuel şekilde koyacağımız küp.
     public Interactable controlButton1;
-
+    public TextMeshProUGUI timeSignCounterText;
 
     private string filePath;
     private StreamWriter writer;
@@ -23,13 +24,14 @@ public class Logger : MonoBehaviour
     void Start()
     {
         controlButton1.OnClick.AddListener(ButtonClicked);
+        UpdateUI();
 
         try
         {
             filePath = Path.Combine(Application.temporaryCachePath, "DistanceLog.csv");
             Debug.Log("file path: " + filePath);
             writer = new StreamWriter(filePath, false);
-            writer.WriteLine("Time;ObjectX;ObjectY;ObjectZ;ObjectRotX;ObjectRotY;ObjectRotZ;ObjectRotW;" +
+            writer.WriteLine("SystemTime;Time;ObjectX;ObjectY;ObjectZ;ObjectRotX;ObjectRotY;ObjectRotZ;ObjectRotW;" +
                 "RefX;RefY;RefZ;RefRotX;RefRotY;RefRotZ;RefRotW;" +
                 "CameraX;CameraY;CameraZ;CameraRotX;CameraRotY;CameraRotZ;CameraRotW;" +
                 "InitialDistance;CurrentDistance;ChangeInDistance;RefToTrackedObjDistance;RefToTrackedObjRotationDiff;TimeSign");
@@ -58,6 +60,7 @@ public class Logger : MonoBehaviour
     {
         timeSign += 1;
         Debug.Log("Button clicked. Time Sign: " + timeSign);
+        UpdateUI();
     }
 
     void Update()
@@ -106,10 +109,11 @@ public class Logger : MonoBehaviour
         float currentDistance = Vector3.Distance(objPos, camPos);
         float changeInDistance = Mathf.Abs(initialDistance - currentDistance);
         float time = Time.time;
+        string systemTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
         string[] values = new string[]
-        {
-        time.ToString("F3"),
+        { 
+        systemTime, time.ToString("F3"),
         objPos.x.ToString("F3"), objPos.y.ToString("F3"), objPos.z.ToString("F3"),
         objRot.x.ToString("F3"), objRot.y.ToString("F3"), objRot.z.ToString("F3"), objRot.w.ToString("F3"),
         refPos.x.ToString("F3"), refPos.y.ToString("F3"), refPos.z.ToString("F3"),
@@ -146,5 +150,10 @@ public class Logger : MonoBehaviour
         {
             Debug.LogError("Dosya kapatılırken hata oluştu: " + ex.Message);
         }
+    }
+
+    private void UpdateUI()
+    {
+        timeSignCounterText.text = $"Time Sign: {timeSign}";
     }
 }

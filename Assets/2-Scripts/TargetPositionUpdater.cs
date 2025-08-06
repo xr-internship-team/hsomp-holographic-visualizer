@@ -4,6 +4,12 @@ public class TargetPositionUpdater : MonoBehaviour
 {
     public Transform markerTransform;
     public Transform objectTransform;
+
+	private Vector3 _smoothedPosition;
+	private Quaternion _smoothedRotation;
+
+	private bool _firstUpdate = true;
+	[SerializeField] private float smoothFactor = 0.5f;
     
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
@@ -23,11 +29,37 @@ public class TargetPositionUpdater : MonoBehaviour
 
         var position = markerTransform.position - objectTransform.rotation * invertedVector;
         var rotaion = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
-        objectTransform.rotation = rotaion;
-        objectTransform.position = position;
+        
+        if (_firstUpdate)
+    	{
+        	_smoothedPosition = position;
+        	_smoothedRotation = rotaion;
+        	_firstUpdate = false;
+    	}
+    	else
+    	{
+        	// Pozisyon ve rotasyonu yumuşat
+        	_smoothedPosition = Vector3.Lerp(_smoothedPosition, position, smoothFactor);
+        	_smoothedRotation = Quaternion.Slerp(_smoothedRotation, rotaion, smoothFactor);
+    	}
+        
+	    // if ((position - _smoothedPosition).magnitude > 1.0f)
+	    // {
+		   //  _smoothedPosition = position; // Ani sıçrama varsa doğrudan uygula
+	    // }
+	    
+    	// Objeye uygula
+    	objectTransform.position = _smoothedPosition;
+    	objectTransform.rotation = _smoothedRotation;
 
-
-
+		//Debug.Log("STAJ: Smooth update applied.");
         // Debug.Log("STAJ: Object transformation position and rotation setted.");
     }
+    
+    public void SetSmoothFactor(float value)
+    {
+	    smoothFactor = Mathf.Clamp01(value);
+	    Debug.Log($"STAJ: Smooth factor set to {smoothFactor}");
+    }
+
 }
