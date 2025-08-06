@@ -12,12 +12,8 @@ public class ReceiverProcessor : MonoBehaviour
     private Thread _receiveThread;
     private Queue<ReceivedData> _receivedDataQueue = new(40);
 
-    private double _lastAppliedTimestamp = 0;
-
-
     public Interactable smoothLevelButtonInc;
     public Interactable smoothLevelButtonDec;
-
     public TextMeshPro smoothLevelButtonText;
 
     #region UnityEventFunctions
@@ -26,6 +22,11 @@ public class ReceiverProcessor : MonoBehaviour
         smoothLevelButtonInc.OnClick.AddListener(SmoothIncButtonClicked);
         smoothLevelButtonDec.OnClick.AddListener(SmoothDecButtonClicked);
 
+        // Initialize button text to show the interpolation delay
+        if (targetPositionUpdater != null)
+        {
+            smoothLevelButtonText.text = $"Delay: {targetPositionUpdater.interpolationDelay * 1000:F0} ms";
+        }
 
         _receiver = new UdpReceiver(12345);
         RunThread();
@@ -36,37 +37,27 @@ public class ReceiverProcessor : MonoBehaviour
         if (_receivedDataQueue.Count > 0)
         {
             var receivedData = _receivedDataQueue.Dequeue();
-
-            double incomingTimestamp = receivedData.GetTimeStamp();
-
-            // Sýra dýþý gelen paketi atla
-            if (incomingTimestamp > _lastAppliedTimestamp)
-            {
-                targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(), receivedData.GetRotation());
-                _lastAppliedTimestamp = incomingTimestamp;
-
-                Debug.Log($"STAJ: Applied new data | Timestamp: {incomingTimestamp}");
-            }
-            else
-            {
-                Debug.LogWarning($"STAJ: Skipped outdated data | Incoming: {incomingTimestamp} < Last: {_lastAppliedTimestamp}");
-            }
+            // Pass the entire data object to the new handler in TargetPositionUpdater
+            targetPositionUpdater.OnDataReceived(receivedData);
         }
     }
 
     private void SmoothIncButtonClicked()
     {
-        targetPositionUpdater.smoothingSpeed += 1;
-        smoothLevelButtonText.text = "Smoothing Level: " + targetPositionUpdater.smoothingSpeed;
-        Debug.Log("Inc button clicked. smooth = " + targetPositionUpdater.smoothingSpeed);
-
+        if (targetPositionUpdater == null) return;
+        // Increase delay by 10ms
+        targetPositionUpdater.interpolationDelay += 0.01f;
+        smoothLevelButtonText.text = $"Delay: {targetPositionUpdater.interpolationDelay * 1000:F0} ms";
+        Debug.Log("Inc button clicked. delay = " + targetPositionUpdater.interpolationDelay);
     }
+
     private void SmoothDecButtonClicked()
     {
-        targetPositionUpdater.smoothingSpeed -= 1;
-        smoothLevelButtonText.text = "Smoothing Level: " + targetPositionUpdater.smoothingSpeed;
-        Debug.Log("Dec button clicked. smooth = " + targetPositionUpdater.smoothingSpeed);
-
+        if (targetPositionUpdater == null) return;
+        // Decrease delay by 10ms, with a minimum of 0
+        targetPositionUpdater.interpolationDelay = Mathf.Max(0, targetPositionUpdater.interpolationDelay - 0.01f);
+        smoothLevelButtonText.text = $"Delay: {targetPositionUpdater.interpolationDelay * 1000:F0} ms";
+        Debug.Log("Dec button clicked. delay = " + targetPositionUpdater.interpolationDelay);
     }
 
     private void OnDisable()
@@ -100,8 +91,10 @@ public class ReceiverProcessor : MonoBehaviour
         while (true)
         {
             var data = _receiver.GetData();
-            _receivedDataQueue.Enqueue(data);
-            Debug.Log("STAJ: Data received. | position: " + data.GetPosition() + " | rotation: " + data.GetRotation() + " | queue count: " + _receivedDataQueue.Count);
+            if (data != null)
+            {
+                _receivedDataQueue.Enqueue(data);
+            }
         }
     }
     

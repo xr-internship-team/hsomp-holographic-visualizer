@@ -3423,7 +3423,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   markerTransform: {fileID: 963194228}
   objectTransform: {fileID: 1154362456}
-  smoothingSpeed: 100
+  interpolationDelay: 0.1
 --- !u!4 &928301060
 Transform:
   m_ObjectHideFlags: 0

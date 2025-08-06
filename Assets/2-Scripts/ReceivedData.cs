@@ -10,6 +10,10 @@ public class ReceivedData
     public List<float> positionDif;
     public List<float> rotationDif;
 
+    // New helper property to convert the Unix timestamp (double) to a DateTime object.
+    // This is needed for the interpolation logic.
+    public DateTime TimestampAsDateTime => DateTime.UnixEpoch.AddSeconds(timestamp);
+
     public double GetTimeStamp()
     {
         return timestamp;
@@ -23,7 +27,6 @@ public class ReceivedData
             positionDif[2]
         );
     }
-
 
     public Quaternion GetRotation()
     {
