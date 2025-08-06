@@ -4,7 +4,12 @@ public class TargetPositionUpdater : MonoBehaviour
 {
     public Transform markerTransform;
     public Transform objectTransform;
-    
+
+    private Vector3 _targetPosition;
+    private Quaternion _targetRotation;
+
+    public float smoothingSpeed = 5f; // yumuþaklýk seviyesi (arttýrýrsan daha hýzlý geçer)
+
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
         var originalQuaternion = rotationDif;
@@ -14,20 +19,33 @@ public class TargetPositionUpdater : MonoBehaviour
             -originalQuaternion.z,
             originalQuaternion.w
         );
-        
+
         var originalVector = positionDif;
         var invertedVector = new Vector3(
             -originalVector.x,
             -originalVector.y,
             -originalVector.z);
 
-        var position = markerTransform.position - objectTransform.rotation * invertedVector;
-        var rotaion = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
-        objectTransform.rotation = rotaion;
-        objectTransform.position = position;
+        _targetPosition = markerTransform.position - objectTransform.rotation * invertedVector;
+        _targetRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
 
+        Debug.Log("STAJ: Target position and rotation updated.");
+    }
 
+    private void Update()
+    {
+        if (objectTransform == null) return;
 
-        Debug.Log("STAJ: Object transformation position and rotation setted.");
+        objectTransform.position = Vector3.Lerp(
+            objectTransform.position,
+            _targetPosition,
+            Time.deltaTime * smoothingSpeed
+        );
+
+        objectTransform.rotation = Quaternion.Slerp(
+            objectTransform.rotation,
+            _targetRotation,
+            Time.deltaTime * smoothingSpeed
+        );
     }
 }
