@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
-
+using TMPro;
 public class ReceiverProcessor : MonoBehaviour
 {
     public TargetPositionUpdater targetPositionUpdater;
+
+    public TextMeshPro timeDifferenceObj;
 
     private IReceiver _receiver;
     private Thread _receiveThread;
@@ -33,12 +35,11 @@ public class ReceiverProcessor : MonoBehaviour
 
                 double incomingTimestamp = receivedData.GetTimeStamp();
 
-                // Sýra dýþý gelen paketi atla
+                // Sï¿½ra dï¿½ï¿½ï¿½ gelen paketi atla
                 if (incomingTimestamp > _lastAppliedTimestamp)
                 {
                     targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(), receivedData.GetRotation());
-                    Debug.Log($"STAJ: Applied new data | Incoming: {incomingTimestamp}, Last: {_lastAppliedTimestamp}, Diff: {(incomingTimestamp - _lastAppliedTimestamp) * 1000.0:F2} ms");
-
+                    timeDifferenceObj.text = $"{(incomingTimestamp - _lastAppliedTimestamp) * 1000.0:F2} ms";
                     _lastAppliedTimestamp = incomingTimestamp;
 
                 }
@@ -69,7 +70,7 @@ public class ReceiverProcessor : MonoBehaviour
 
         if (_receiveThread != null && _receiveThread.IsAlive)
         {
-            _receiveThread.Join(); // Thread düzgün þekilde kapanana kadar bekle
+            _receiveThread.Join(); // Thread dï¿½zgï¿½n ï¿½ekilde kapanana kadar bekle
         }
 
         StopAllCoroutines();
