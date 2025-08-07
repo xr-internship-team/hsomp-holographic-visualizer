@@ -3,41 +3,38 @@ using Microsoft.MixedReality.Toolkit.UI;
 
 public class AlignController : MonoBehaviour
 {
-    public TargetPositionUpdater updater;
-    
     public Transform objectTransform;
     public Transform referenceObjectTransform;
+    public TargetPositionUpdater updater;
     public Interactable alignButton;
-    
+
     private void Start()
     {
-        alignButton.OnClick.AddListener(AlignObjects);
+        alignButton.OnClick.AddListener(AlignToReference);
     }
 
-    private void AlignObjects()
+    private void AlignToReference()
     {
-        // Önceki konum/rotasyonu al
-        Vector3 oldPosition = objectTransform.position;
-        Quaternion oldRotation = objectTransform.transform.rotation;
+        Vector3 oldPos = objectTransform.position;
+        Quaternion oldRot = objectTransform.rotation;
 
-        // Yeni konuma hizala
+        Vector3 newPos = referenceObjectTransform.position;
+        Quaternion newRot = referenceObjectTransform.rotation;
+        
+        updater.CalculateAlignmentOffsetTo(newPos, newRot);
+        Debug.Log("AlignController: Alignment offset applied.");
+        
         objectTransform.position = referenceObjectTransform.position;
         objectTransform.rotation = referenceObjectTransform.rotation;
-
-        // Yeni konum/rotasyon
-        Vector3 newPosition = objectTransform.position;
-        Quaternion newRotation = objectTransform.rotation;
-
-        // Değişimi hesapla
-        Vector3 positionDelta = newPosition - oldPosition;
-        float rotationDelta = Quaternion.Angle(oldRotation, newRotation);
-
-        // Konsola yazdır
-        Debug.Log("=== Object Aligned ===");
-        Debug.Log($"Old Position: {oldPosition:F3} | New Position: {newPosition:F3} | ΔPos: {positionDelta.magnitude:F3} m");
-        Debug.Log($"Old Rotation: {oldRotation.eulerAngles:F1} | New Rotation: {newRotation.eulerAngles:F1} | ΔRot: {rotationDelta:F1}°");
         
-        updater.SetReferenceTransform(referenceObjectTransform.transform);
-        Debug.Log("AlignController: markerTransform updated in TargetPositionUpdater.");
+        objectTransform.position = newPos;
+        objectTransform.rotation = newRot;
+        
+        Vector3 posDelta = newPos - oldPos;
+        float rotDelta = Quaternion.Angle(oldRot, newRot);
+
+        Debug.Log("=== AlignController: Object Aligned ===");
+        Debug.Log($"Old Pos: {oldPos:F3} | New Pos: {newPos:F3} | ΔPos: {posDelta.magnitude:F3} m");
+        Debug.Log($"Old Rot: {oldRot.eulerAngles:F1} | New Rot: {newRot.eulerAngles:F1} | ΔRot: {rotDelta:F1}°");
     }
 }

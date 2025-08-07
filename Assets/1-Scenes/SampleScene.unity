@@ -6789,6 +6789,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectTransform: {fileID: 1154362456}
   referenceObjectTransform: {fileID: 711714733}
+  updater: {fileID: 928301059}
   alignButton: {fileID: 241919775}
 --- !u!4 &1439798928
 Transform:
