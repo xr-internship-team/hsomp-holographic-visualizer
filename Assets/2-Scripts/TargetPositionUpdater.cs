@@ -61,5 +61,13 @@ public class TargetPositionUpdater : MonoBehaviour
 	    smoothFactor = value;
 	    Debug.Log($"STAJ: Smooth factor set to {smoothFactor}");
     }
+    
+    public void SetReferenceTransform(Transform newReference)
+    {
+	    if (newReference == null) return;
+	    markerTransform = newReference;
+	    Debug.Log("TargetPositionUpdater: markerTransform güncellendi.");
+    }
+
 
 }
