@@ -9,7 +9,7 @@ public class TargetPositionUpdater : MonoBehaviour
 	private Quaternion _smoothedRotation;
 
 	private bool _firstUpdate = true;
-	[SerializeField] private float smoothFactor = 0.5f;
+	public float smoothFactor;
     
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
@@ -58,7 +58,7 @@ public class TargetPositionUpdater : MonoBehaviour
     
     public void SetSmoothFactor(float value)
     {
-	    smoothFactor = Mathf.Clamp01(value);
+	    smoothFactor = value;
 	    Debug.Log($"STAJ: Smooth factor set to {smoothFactor}");
     }
 

@@ -11,7 +11,7 @@ public class SmoothFactorController : MonoBehaviour
     public Interactable  decreaseButton;
     public TextMeshProUGUI smoothCounterText;  // Eğer Text kullandıysan: public Text counterText;
 
-    private int _smoothLevel = 5; // 0-10 arası sayı
+    private int _smoothLevel = 2; // 0-10 arası sayı
     private const int _minLevel = 0;
     private const int _maxLevel = 10;
 
@@ -20,6 +20,7 @@ public class SmoothFactorController : MonoBehaviour
         increaseButton.OnClick.AddListener(IncreaseSmooth);
         decreaseButton.OnClick.AddListener(DecreaseSmooth);
         UpdateUI();
+        UpdateSmoothFactor();
     }
 
     private void IncreaseSmooth()

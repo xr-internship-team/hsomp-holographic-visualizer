@@ -5,7 +5,6 @@ using UnityEngine;
 public class ReceiverProcessor : MonoBehaviour
 {
     public TargetPositionUpdater targetPositionUpdater;
-    public Logger logger;
 
     private IReceiver _receiver;
     private Thread _receiveThread;
