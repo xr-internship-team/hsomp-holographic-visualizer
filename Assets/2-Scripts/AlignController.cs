@@ -3,10 +3,10 @@ using Microsoft.MixedReality.Toolkit.UI;
 
 public class AlignController : MonoBehaviour
 {
-    public Transform objectTransform;
-    public Transform referenceObjectTransform;
-    public TargetPositionUpdater updater;
-    public Interactable alignButton;
+    public GameObject objectToAlign;           // Main cube
+    public GameObject referenceObject;         // Hand-placed reference cube
+    public TargetPositionUpdater updater;      // TargetPositionUpdater
+    public Interactable alignButton;           // MRTK button
 
     private void Start()
     {
@@ -15,26 +15,20 @@ public class AlignController : MonoBehaviour
 
     private void AlignToReference()
     {
-        Vector3 oldPos = objectTransform.position;
-        Quaternion oldRot = objectTransform.rotation;
+        Vector3 oldPos = objectToAlign.transform.position;
+        Quaternion oldRot = objectToAlign.transform.rotation;
 
-        Vector3 newPos = referenceObjectTransform.position;
-        Quaternion newRot = referenceObjectTransform.rotation;
-        
-        updater.CalculateAlignmentOffsetTo(newPos, newRot);
-        Debug.Log("AlignController: Alignment offset applied.");
-        
-        objectTransform.position = referenceObjectTransform.position;
-        objectTransform.rotation = referenceObjectTransform.rotation;
-        
-        objectTransform.position = newPos;
-        objectTransform.rotation = newRot;
-        
-        Vector3 posDelta = newPos - oldPos;
-        float rotDelta = Quaternion.Angle(oldRot, newRot);
+        Vector3 targetPos = referenceObject.transform.position;
+        Quaternion targetRot = referenceObject.transform.rotation;
 
-        Debug.Log("=== AlignController: Object Aligned ===");
-        Debug.Log($"Old Pos: {oldPos:F3} | New Pos: {newPos:F3} | ΔPos: {posDelta.magnitude:F3} m");
-        Debug.Log($"Old Rot: {oldRot.eulerAngles:F1} | New Rot: {newRot.eulerAngles:F1} | ΔRot: {rotDelta:F1}°");
+        // 1) Compute offsets from the latest RAW pose (idempotent)
+        updater.CalculateAlignmentOffsetTo(targetPos, targetRot);
+
+        // Logs
+        Vector3 posDelta = targetPos - oldPos;
+        float rotDelta = Quaternion.Angle(oldRot, targetRot);
+        Debug.Log("=== AlignController: Align triggered ===");
+        Debug.Log($"Old Pos: {oldPos:F3} | Target Pos: {targetPos:F3} | ΔPos: {posDelta.magnitude:F3} m");
+        Debug.Log($"Old Rot: {oldRot.eulerAngles:F1} | Target Rot: {targetRot.eulerAngles:F1} | ΔRot: {rotDelta:F1}°");
     }
 }
