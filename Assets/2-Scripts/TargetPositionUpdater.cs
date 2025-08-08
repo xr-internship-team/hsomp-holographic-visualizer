@@ -62,7 +62,6 @@ public class TargetPositionUpdater : MonoBehaviour
         }
     }
 
-    // Senin mevcut ConfigureOffset metodu
     public void ConfigureOffset()
     {
         offsetConfigured = false;
@@ -75,6 +74,7 @@ public class TargetPositionUpdater : MonoBehaviour
 
         var positionOffsetnew = referencePos - objectPos;
         var rotationOffsetnew = Quaternion.Inverse(objectRot) * referenceRot;
+        rotationOffsetnew.Normalize();
 
         positionOffset += positionOffsetnew;
         rotationOffset *= rotationOffsetnew;
