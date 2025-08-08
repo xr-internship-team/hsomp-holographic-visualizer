@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using Microsoft.MixedReality.Toolkit.UI;
+using System.Collections;
 
 public class ButtonHandler : MonoBehaviour
 {
@@ -16,8 +17,12 @@ public class ButtonHandler : MonoBehaviour
     public TextMeshPro smoothLevelButtonText;
 
     public Interactable configureOffsetButton;
+    public TextMeshPro configureOffsetButtonText;
 
     public Interactable interpolationToggle;
+
+    private Coroutine configureCoroutine = null;
+
 
 
 
@@ -73,7 +78,15 @@ public class ButtonHandler : MonoBehaviour
     {
         if (targetPositionUpdater != null)
         {
-            targetPositionUpdater.ConfigureOffset();
+            targetPositionUpdater.ConfigureOffsetMultiple();
+
+            if (configureCoroutine != null)
+                StopCoroutine(configureCoroutine);
+
+            // Toplam süre = interval * steps
+            float totalTime = targetPositionUpdater.configureInterval * targetPositionUpdater.configureSteps;
+            configureCoroutine = StartCoroutine(ConfigureOffsetCountdown(totalTime, targetPositionUpdater.configureSteps));
+
             Debug.Log("Offset configuration triggered from button.");
         }
     }
@@ -113,4 +126,17 @@ public class ButtonHandler : MonoBehaviour
         }
     }
     #endregion
+
+    private IEnumerator ConfigureOffsetCountdown(float totalDuration, int steps)
+    {
+        float interval = totalDuration / steps;
+
+        for (int i = steps; i > 0; i--)
+        {
+            configureOffsetButtonText.text = $"Configure offset in:\n{i * interval:0.0}s\n\n";
+            yield return new WaitForSeconds(interval);
+        }
+
+        configureOffsetButtonText.text = "Configure offset done.\nPress to configure again.\n\n\n";
+    }
 }

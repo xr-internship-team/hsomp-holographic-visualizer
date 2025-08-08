@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class TargetPositionUpdater : MonoBehaviour
@@ -17,6 +18,9 @@ public class TargetPositionUpdater : MonoBehaviour
     private bool offsetConfigured = false;
 
     private bool interpolationEnabled = true;
+
+    public float configureInterval = 1f; // saniye cinsinden bekleme süresi
+    public int configureSteps = 5;       // kaç defa tekrar edecek
 
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
     {
@@ -44,10 +48,25 @@ public class TargetPositionUpdater : MonoBehaviour
         _targetRotation = baseRotation;
     }
 
+    public void ConfigureOffsetMultiple()
+    {
+        StartCoroutine(ConfigureOffsetRoutine());
+    }
+
+    private IEnumerator ConfigureOffsetRoutine()
+    {
+        for (int i = 0; i < configureSteps; i++)
+        {
+            ConfigureOffset();
+            yield return new WaitForSeconds(configureInterval);
+        }
+    }
+
+    // Senin mevcut ConfigureOffset metodu
     public void ConfigureOffset()
     {
         offsetConfigured = false;
-        // Offset uygulanmamýþ hedef pozisyon/rotasyon üzerinden hesapla
+
         Vector3 objectPos = _targetPosition;
         Quaternion objectRot = _targetRotation;
 
@@ -56,8 +75,10 @@ public class TargetPositionUpdater : MonoBehaviour
 
         var positionOffsetnew = referencePos - objectPos;
         var rotationOffsetnew = Quaternion.Inverse(objectRot) * referenceRot;
+
         positionOffset += positionOffsetnew;
         rotationOffset *= rotationOffsetnew;
+
         offsetConfigured = true;
 
         Debug.Log($"Offset set. Position offset: {positionOffset}, Rotation offset: {rotationOffset.eulerAngles}");
