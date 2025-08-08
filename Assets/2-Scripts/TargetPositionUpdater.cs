@@ -33,9 +33,9 @@ public class TargetPositionUpdater : MonoBehaviour
             -rotationDif.z,
             rotationDif.w
         );
-
-        Vector3 basePosition = markerTransform.position - objectTransform.rotation * invertedVector;
         Quaternion baseRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
+        Vector3 basePosition = markerTransform.position - baseRotation * invertedVector;
+
 
         if (offsetConfigured)
         {
