@@ -27,8 +27,8 @@ public class TargetPositionUpdater : MonoBehaviour
         var invertedQuaternion = new Quaternion(-rotationDif.x, -rotationDif.y, -rotationDif.z, rotationDif.w);
 
         // 1) RAW pose (no offsets)
-        var rawPosition = markerTransform.position - objectTransform.rotation * invertedVector;
         var rawRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
+        var rawPosition = markerTransform.position - rawRotation * invertedVector;
 
         // Save for idempotent alignment calculations
         _lastRawPosition = rawPosition;
@@ -37,7 +37,7 @@ public class TargetPositionUpdater : MonoBehaviour
 
         // 2) Final pose (apply alignment offsets only if enabled)
         Vector3 finalPosition = useAlignmentOffset ? rawPosition + alignmentOffset : rawPosition;
-        Quaternion finalRotation = useAlignmentOffset ? rawRotation * rotationOffset : rawRotation;
+        Quaternion finalRotation = useAlignmentOffset ? rotationOffset * rawRotation : rawRotation;
 
         // 3) Smoothing
         if (_firstUpdate)
