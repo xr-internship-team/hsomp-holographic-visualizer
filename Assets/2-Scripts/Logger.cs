@@ -9,7 +9,7 @@ public class Logger : MonoBehaviour
     public Transform playspaceTransform;    // MixedRealityPlayspace'in Transform'u
     public GameObject refObject;            // Manuel şekilde koyacağımız küp.
     public Interactable controlButton1;
-    public TextMeshProUGUI timeSignCounterText;
+    public TextMeshPro timeSignCounterText;
 
     private string filePath;
     private StreamWriter writer;

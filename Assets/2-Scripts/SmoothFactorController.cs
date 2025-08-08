@@ -9,7 +9,7 @@ public class SmoothFactorController : MonoBehaviour
 
     public Interactable increaseButton;
     public Interactable  decreaseButton;
-    public TextMeshProUGUI smoothCounterText;  // Eğer Text kullandıysan: public Text counterText;
+    public TextMeshPro smoothCounterText;  // Eğer Text kullandıysan: public Text counterText;
 
     private int _smoothLevel = 8; // 0-10 arası sayı
     private const int _minLevel = 0;
