@@ -30,6 +30,7 @@ public class UdpReceiver: IReceiver
             var data = _client.Receive(ref remoteEndPoint);
             var message = Encoding.UTF8.GetString(data);
             var receivedData = JsonUtility.FromJson<ReceivedData>(message);
+            // Debug.Log($"Alınan Pozisyon: {receivedData.GetPosition()}, Rotasyon: {receivedData.GetRotation()}");
             return receivedData;
         }
         catch (Exception e)

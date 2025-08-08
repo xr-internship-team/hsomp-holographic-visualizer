@@ -9,12 +9,8 @@ public class ReceiverProcessor : MonoBehaviour
     private IReceiver _receiver;
     private Thread _receiveThread;
     private Queue<ReceivedData> _receivedDataQueue = new(40);
-
-    private double _lastAppliedTimestamp = 0;
-
-    private readonly object _queueLock = new();
-
-    private bool _isRunning = false;
+    
+    private double _lastTimestamp; // epoch timestamp olarak
 
     #region UnityEventFunctions
     private void Start()
@@ -25,81 +21,67 @@ public class ReceiverProcessor : MonoBehaviour
 
     private void Update()
     {
-        lock (_queueLock)
+        lock (_receivedDataQueue)
         {
             if (_receivedDataQueue.Count > 0)
             {
                 var receivedData = _receivedDataQueue.Dequeue();
-
-                double incomingTimestamp = receivedData.GetTimeStamp();
-
-                // Sýra dýþý gelen paketi atla
-                if (incomingTimestamp > _lastAppliedTimestamp)
-                {
-                    targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(), receivedData.GetRotation());
-                    Debug.Log($"STAJ: Applied new data | Incoming: {incomingTimestamp}, Last: {_lastAppliedTimestamp}, Diff: {(incomingTimestamp - _lastAppliedTimestamp) * 1000.0:F2} ms");
-
-                    _lastAppliedTimestamp = incomingTimestamp;
-
-                }
-                else
-                {
-                    Debug.LogWarning($"STAJ: Skipped outdated data | Incoming: {incomingTimestamp} < Last: {_lastAppliedTimestamp}");
-                }
+                targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(), receivedData.GetRotation());
             }
         }
+        //Debug.Log("STAJ: Data dequeued. " + " | " + _receivedDataQueue.Count);
+        
     }
 
     private void OnDisable()
     {
-        StopReceiverThread();
+        _receiver.Close();
+        _receiveThread?.Abort();
+        StopAllCoroutines();
     }
 
     private void OnDestroy()
     {
-        StopReceiverThread();
+        _receiver.Close();
+        _receiveThread?.Abort();
+        StopAllCoroutines();
     }
+    
     #endregion
 
     #region PrivateFunctions
-    private void StopReceiverThread()
-    {
-        _isRunning = false;
-        _receiver.Close();
 
-        if (_receiveThread != null && _receiveThread.IsAlive)
-        {
-            _receiveThread.Join();
-        }
-
-        StopAllCoroutines();
-    }
     private void RunThread()
     {
-        _isRunning = true;
         _receiveThread = new Thread(ReceiveThread);
         _receiveThread.IsBackground = true;
         _receiveThread.Start();
         Debug.Log("STAJ: Thread ran.");
     }
-
+    
     private void ReceiveThread()
     {
-        while (_isRunning)
+        while (true)
         {
             var data = _receiver.GetData();
-
-            if (data != null)
+            double dataTime = data.timestamp; 
+            // Debug.Log($"STAJ: Data received. Timestamp: {data.timestamp} | Epoch: {dataTime} | Pos: {data.GetPosition()} | Rot: {data.GetRotation()}");
+            
+            if (dataTime > _lastTimestamp) 
             {
-                lock (_queueLock)
+                lock (_receivedDataQueue)
                 {
                     _receivedDataQueue.Enqueue(data);
                 }
-
-                Debug.Log("STAJ: Data received. | position: " + data.GetPosition() + " | rotation: " + data.GetRotation() + " | queue count: " + _receivedDataQueue.Count);
+                _lastTimestamp = dataTime;
+                // Debug.Log($"STAJ: Accepted timestamp: {dataTime}");
+            }
+            else
+            {
+                Debug.LogWarning($"STAJ: Rejected outdated data. Timestamp: {dataTime}, Last: {_lastTimestamp}");
             }
         }
     }
-
+    
     #endregion
 }
