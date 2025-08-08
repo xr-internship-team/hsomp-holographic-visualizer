@@ -24,7 +24,7 @@ public class Logger : MonoBehaviour
 
     private ConcurrentQueue<LogDataEntry> logQueue = new ConcurrentQueue<LogDataEntry>();
 
-    // Veri yapısı
+    // Data Structure
     private struct LogDataEntry
     {
         public float timestamp;
@@ -104,7 +104,7 @@ public class Logger : MonoBehaviour
 
     #region PrivateFunctions
 
-    void EnqueueLogData()
+    private void EnqueueLogData()
     {
         if (trackedObject == null || playspaceTransform == null) return;
 
@@ -177,7 +177,7 @@ public class Logger : MonoBehaviour
     }
     #endregion
 
-    #region GetterSetter
+    #region GetterSetters
 
     public void SetTimeSign(int value)
     {

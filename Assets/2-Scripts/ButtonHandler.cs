@@ -15,6 +15,12 @@ public class ButtonHandler : MonoBehaviour
     public Interactable smoothLevelButtonDec;
     public TextMeshPro smoothLevelButtonText;
 
+    public Interactable configureOffsetButton;
+
+    public Interactable interpolationToggle;
+
+
+
     private int timeSign;
     private float smoothingSpeed;
 
@@ -33,19 +39,50 @@ public class ButtonHandler : MonoBehaviour
             smoothLevelButtonDec.OnClick.AddListener(SmoothDecButtonClicked);
         }
 
+        if (configureOffsetButton != null)
+        {
+            configureOffsetButton.OnClick.AddListener(ConfigureOffsetClicked);
+        }
+
+        if (interpolationToggle != null)
+        {
+            interpolationToggle.OnClick.AddListener(OnInterpolationToggleChanged);
+        }
+
         timeSign = logger.GetTimeSign();
         smoothingSpeed = targetPositionUpdater.GetSmoothingSpeed();
-        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed;
+        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
         TimeSignButtonText.text = "TimeSign: " + timeSign;
     }
     #endregion
 
     #region PrivateFunctions
+
+    private void OnInterpolationToggleChanged()
+    {
+        bool isToggled = interpolationToggle.IsToggled;
+
+        if (targetPositionUpdater != null)
+        {
+            targetPositionUpdater.EnableInterpolation(isToggled);
+            Debug.Log("Interpolation toggled: " + isToggled);
+        }
+    }
+
+    private void ConfigureOffsetClicked()
+    {
+        if (targetPositionUpdater != null)
+        {
+            targetPositionUpdater.ConfigureOffset();
+            Debug.Log("Offset configuration triggered from button.");
+        }
+    }
+
     private void SmoothIncButtonClicked()
     {
-        smoothingSpeed += 1;
-        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed;
-        Debug.Log("Dec button clicked. smooth = " + smoothingSpeed);
+        smoothingSpeed += 0.1f;
+        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
+        Debug.Log("Inc button clicked. smooth = " + smoothingSpeed.ToString("F1"));
 
         if (targetPositionUpdater != null)
         {
@@ -54,9 +91,9 @@ public class ButtonHandler : MonoBehaviour
     }
     private void SmoothDecButtonClicked()
     {
-        smoothingSpeed -= 1;
-        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed;
-        Debug.Log("Dec button clicked. smooth = " + smoothingSpeed);
+        smoothingSpeed -= 0.1f;
+        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
+        Debug.Log("Dec button clicked. smooth = " + smoothingSpeed.ToString("F1"));
 
         if (targetPositionUpdater != null)
         {

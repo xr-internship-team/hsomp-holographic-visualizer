@@ -69,7 +69,7 @@ public class ReceiverProcessor : MonoBehaviour
 
         if (_receiveThread != null && _receiveThread.IsAlive)
         {
-            _receiveThread.Join(); // Thread düzgün þekilde kapanana kadar bekle
+            _receiveThread.Join();
         }
 
         StopAllCoroutines();
