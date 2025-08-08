@@ -9,11 +9,11 @@ public class SmoothFactorController : MonoBehaviour
 
     public Interactable increaseButton;
     public Interactable  decreaseButton;
-    public TextMeshPro smoothCounterText;  // Eğer Text kullandıysan: public Text counterText;
+    public TextMeshPro smoothCounterText;
 
-    private int _smoothLevel = 8; // 0-10 arası sayı
-    private const int _minLevel = 0;
-    private const int _maxLevel = 10;
+    private int _smoothLevel = 10;
+    private const int MinLevel = 0;
+    private const int MaxLevel = 20;
 
     private void Start()
     {
@@ -25,26 +25,21 @@ public class SmoothFactorController : MonoBehaviour
 
     private void IncreaseSmooth()
     {
-        if (_smoothLevel < _maxLevel)
-        {
-            _smoothLevel++;
-            UpdateSmoothFactor();
-        }
+        if (_smoothLevel >= MaxLevel) return;
+        _smoothLevel++;
+        UpdateSmoothFactor();
     }
 
     private void DecreaseSmooth()
     {
-        if (_smoothLevel > _minLevel)
-        {
-            _smoothLevel--;
-            UpdateSmoothFactor();
-        }
+        if (_smoothLevel <= MinLevel) return;
+        _smoothLevel--;
+        UpdateSmoothFactor();
     }
 
     private void UpdateSmoothFactor()
     {
-        // 0–10 arasında lineer ölçekle (örnek: 0.0f–1.0f)
-        float mappedValue = _smoothLevel / 10f;
+        var mappedValue = _smoothLevel / 10f;
         targetUpdater.SetSmoothFactor(mappedValue);
         UpdateUI();
     }

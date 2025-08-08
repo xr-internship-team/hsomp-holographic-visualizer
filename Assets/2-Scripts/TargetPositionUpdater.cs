@@ -11,9 +11,9 @@ public class TargetPositionUpdater : MonoBehaviour
     public float smoothFactor;
 
     // Alignment state
-    private Vector3 alignmentOffset = Vector3.zero;
-    private Quaternion rotationOffset = Quaternion.identity;
-    private bool useAlignmentOffset = false;
+    private Vector3 _alignmentOffset = Vector3.zero;
+    private Quaternion _rotationOffset = Quaternion.identity;
+    private bool _useAlignmentOffset = false;
 
     // Keep the latest RAW pose (computed WITHOUT any offsets)
     private Vector3 _lastRawPosition;
@@ -36,8 +36,8 @@ public class TargetPositionUpdater : MonoBehaviour
         _hasRawPose = true;
 
         // 2) Final pose (apply alignment offsets only if enabled)
-        Vector3 finalPosition = useAlignmentOffset ? rawPosition + alignmentOffset : rawPosition;
-        Quaternion finalRotation = useAlignmentOffset ? rotationOffset * rawRotation : rawRotation;
+        Vector3 finalPosition = _useAlignmentOffset ? rawPosition + _alignmentOffset : rawPosition;
+        Quaternion finalRotation = _useAlignmentOffset ? _rotationOffset * rawRotation : rawRotation;
 
         // 3) Smoothing
         if (_firstUpdate)
@@ -81,12 +81,9 @@ public class TargetPositionUpdater : MonoBehaviour
             basisRot = _firstUpdate ? objectTransform.rotation : _smoothedRotation;
         }
 
-        alignmentOffset = targetWorldPosition - basisPos;
-        rotationOffset = targetWorldRotation * Quaternion.Inverse(basisRot); 
-        useAlignmentOffset = true;
+        _alignmentOffset = targetWorldPosition - basisPos;
+        _rotationOffset = targetWorldRotation * Quaternion.Inverse(basisRot); 
+        _useAlignmentOffset = true;
         Debug.Log("TargetPositionUpdater: Alignment offset calculated (" + (_hasRawPose ? "RAW" : "SMOOTHED") + ") and enabled.");
     }
-
-    public bool HasValidRawPose() => _hasRawPose;
-    
 }
