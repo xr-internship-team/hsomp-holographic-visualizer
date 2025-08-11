@@ -29,6 +29,7 @@ MonoBehaviour:
   m_Name: HPMixedRealityControllerProfile WSA
   m_EditorClassIdentifier: 
   m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: HP Reverb G2 Controller Profile
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.interaction.hpmixedrealitycontroller
@@ -131,26 +132,20 @@ MonoBehaviour:
   m_Name: Standalone
   m_EditorClassIdentifier: 
   features:
-  - {fileID: -1337672720197576087}
   - {fileID: 4143383949672016531}
   - {fileID: -2572852855571028821}
   - {fileID: 3995129668978893358}
   - {fileID: -3420046573009014867}
   - {fileID: -336676172560714563}
-  - {fileID: -6539573747191967274}
-  - {fileID: 1129272082616514335}
   - {fileID: -3373240966191311195}
   - {fileID: 5098761558121685748}
   - {fileID: -5053125432322501016}
   - {fileID: 6874785479231511813}
   - {fileID: 3092754880681176686}
   - {fileID: 7505573541250271423}
-  - {fileID: 5559798406198321645}
   - {fileID: -2451094514464380522}
-  - {fileID: 1862442660572801023}
   - {fileID: -6771919164223849746}
   - {fileID: -854305522347397730}
-  - {fileID: -3851851298198185382}
   - {fileID: 6095062525739518004}
   - {fileID: -3550778706666271588}
   m_renderMode: 1
@@ -283,7 +278,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c79c911b38743a649b1c1eddb5097202, type: 3}
   m_Name: HandTrackingFeaturePlugin Standalone
   m_EditorClassIdentifier: 
-  m_enabled: 1
+  m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: Hand Tracking
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.handtracking
@@ -292,6 +288,12 @@ MonoBehaviour:
   company: Microsoft
   priority: 0
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
   leftHandTrackingOptions:
     motionRange: 0
   rightHandTrackingOptions:
@@ -410,6 +412,7 @@ MonoBehaviour:
   m_Name: PlayModeRemotingPlugin Standalone
   m_EditorClassIdentifier: 
   m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: Holographic Remoting for Play Mode
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.playmoderemoting
@@ -417,11 +420,18 @@ MonoBehaviour:
   company: Microsoft
   priority: -100
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
   m_remoteHostName: 
   m_remoteHostPort: 8265
   m_maxBitrate: 20000
   m_videoCodec: 0
   m_enableAudio: 0
+  m_remotingSettings: {fileID: 0}
 --- !u!114 &-3687603116377438409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -557,6 +567,7 @@ MonoBehaviour:
   m_Name: HandTrackingFeaturePlugin Android
   m_EditorClassIdentifier: 
   m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: Hand Tracking
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.handtracking
@@ -565,6 +576,12 @@ MonoBehaviour:
   company: Microsoft
   priority: 0
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
   leftHandTrackingOptions:
     motionRange: 0
   rightHandTrackingOptions:
@@ -615,7 +632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7de993716e042c6499d0c18eed3a773c, type: 3}
   m_Name: MockRuntime Standalone
   m_EditorClassIdentifier: 
-  m_enabled: 0
+  m_enabled: 1
   nameUi: Mock Runtime
   version: 0.0.2
   featureIdInternal: com.unity.openxr.feature.mockruntime
@@ -637,6 +654,7 @@ MonoBehaviour:
   m_Name: AppRemotingPlugin WSA
   m_EditorClassIdentifier: 
   m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: Holographic Remoting remote app
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.appremoting
@@ -644,6 +662,12 @@ MonoBehaviour:
   company: Microsoft
   priority: -100
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
 --- !u!114 &-1955471186684618812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -697,6 +721,7 @@ MonoBehaviour:
   m_Name: AppRemotingPlugin Standalone
   m_EditorClassIdentifier: 
   m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: Holographic Remoting remote app
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.appremoting
@@ -704,6 +729,12 @@ MonoBehaviour:
   company: Microsoft
   priority: -100
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
 --- !u!114 &-967903936550539051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -762,13 +793,11 @@ MonoBehaviour:
   - {fileID: -5095198267633130708}
   - {fileID: -4046147322117737263}
   - {fileID: 6131827477438786046}
-  - {fileID: -2815349854178537542}
   - {fileID: 5287090193766596288}
   - {fileID: 1563603838862220810}
   - {fileID: 6704529897012960550}
   - {fileID: 7114120359788548865}
   - {fileID: 5716433543009035716}
-  - {fileID: 6966672272829324497}
   - {fileID: -2939178815191711549}
   - {fileID: 1254382877751402446}
   - {fileID: 7774319395825333295}
@@ -847,6 +876,7 @@ MonoBehaviour:
   m_Name: HPMixedRealityControllerProfile Standalone
   m_EditorClassIdentifier: 
   m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: HP Reverb G2 Controller Profile
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.interaction.hpmixedrealitycontroller
@@ -927,7 +957,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c8f1ce8139888c4ab621f6b3c8bb558, type: 3}
   m_Name: MotionControllerFeaturePlugin Standalone
   m_EditorClassIdentifier: 
-  m_enabled: 1
+  m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: Motion Controller Model
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.controller
@@ -935,6 +966,12 @@ MonoBehaviour:
   company: Microsoft
   priority: 0
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
 --- !u!114 &2110891023554111642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -948,6 +985,7 @@ MonoBehaviour:
   m_Name: HandTrackingFeaturePlugin WSA
   m_EditorClassIdentifier: 
   m_enabled: 1
+  <failedInitialization>k__BackingField: 0
   nameUi: Hand Tracking
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.handtracking
@@ -956,6 +994,12 @@ MonoBehaviour:
   company: Microsoft
   priority: 0
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
   leftHandTrackingOptions:
     motionRange: 0
   rightHandTrackingOptions:
@@ -1206,7 +1250,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f8ec2975f18d5e479159feb34b4dc86, type: 3}
   m_Name: MixedRealityFeaturePlugin Standalone
   m_EditorClassIdentifier: 
-  m_enabled: 1
+  m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: Mixed Reality Features
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.hololens
@@ -1218,6 +1263,12 @@ MonoBehaviour:
   company: Microsoft
   priority: 0
   required: 1
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
   disableFirstPersonObserver: 0
   enablePoseUpdateOnBeforeRender: 0
   validationRuleTarget: 0
@@ -1337,6 +1388,7 @@ MonoBehaviour:
   m_Name: MixedRealityFeaturePlugin WSA
   m_EditorClassIdentifier: 
   m_enabled: 1
+  <failedInitialization>k__BackingField: 0
   nameUi: Mixed Reality Features
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.hololens
@@ -1348,6 +1400,12 @@ MonoBehaviour:
   company: Microsoft
   priority: 0
   required: 1
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
   disableFirstPersonObserver: 0
   enablePoseUpdateOnBeforeRender: 0
   validationRuleTarget: 0
@@ -1404,6 +1462,7 @@ MonoBehaviour:
   m_Name: MotionControllerFeaturePlugin Android
   m_EditorClassIdentifier: 
   m_enabled: 0
+  <failedInitialization>k__BackingField: 0
   nameUi: Motion Controller Model
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.controller
@@ -1411,6 +1470,12 @@ MonoBehaviour:
   company: Microsoft
   priority: 0
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
 --- !u!114 &7114120359788548865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1484,22 +1549,17 @@ MonoBehaviour:
   m_Name: WSA
   m_EditorClassIdentifier: 
   features:
-  - {fileID: -2263255073563943979}
   - {fileID: -1955471186684618812}
   - {fileID: -7115117817142368075}
   - {fileID: -7255808737320817125}
   - {fileID: -967903936550539051}
   - {fileID: -7693270871738430684}
-  - {fileID: 2110891023554111642}
-  - {fileID: -8581694070431166590}
   - {fileID: 5836751040488458217}
   - {fileID: -3655184608019625411}
   - {fileID: -7847165262517268845}
   - {fileID: -3687603116377438409}
   - {fileID: -1360795067307088195}
   - {fileID: 9002181779331219048}
-  - {fileID: 6699810015631564976}
-  - {fileID: 8959023222089713140}
   - {fileID: 3673103589087707594}
   - {fileID: -7447635073613256850}
   - {fileID: -6906368026872019882}
@@ -1520,6 +1580,7 @@ MonoBehaviour:
   m_Name: MotionControllerFeaturePlugin WSA
   m_EditorClassIdentifier: 
   m_enabled: 1
+  <failedInitialization>k__BackingField: 0
   nameUi: Motion Controller Model
   version: 1.11.2
   featureIdInternal: com.microsoft.openxr.feature.controller
@@ -1527,6 +1588,12 @@ MonoBehaviour:
   company: Microsoft
   priority: 0
   required: 0
+  <Instance>k__BackingField: 0
+  <SystemId>k__BackingField: 0
+  <Session>k__BackingField: 0
+  <IsSessionRunning>k__BackingField: 0
+  <SessionState>k__BackingField: 0
+  <SceneOriginSpace>k__BackingField: 0
 --- !u!114 &9002181779331219048
 MonoBehaviour:
   m_ObjectHideFlags: 0
