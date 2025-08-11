@@ -22,7 +22,7 @@ public class TargetPositionUpdater : MonoBehaviour
     public float configureInterval = 1f; // saniye cinsinden bekleme süresi
     public int configureSteps = 5;       // kaç defa tekrar edecek
 
-    public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
+    public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif, Vector3 cameraPosition, Quaternion cameraRotation)
     {
 
 
@@ -33,8 +33,8 @@ public class TargetPositionUpdater : MonoBehaviour
             -rotationDif.z,
             rotationDif.w
         );
-        Quaternion baseRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
-        Vector3 basePosition = markerTransform.position - baseRotation * invertedVector;
+        Quaternion baseRotation = cameraRotation * Quaternion.Inverse(invertedQuaternion);
+        Vector3 basePosition = cameraPosition - baseRotation * invertedVector;
 
 
         if (offsetConfigured)

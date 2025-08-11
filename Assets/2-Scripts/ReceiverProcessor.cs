@@ -5,12 +5,13 @@ using UnityEngine;
 public class ReceiverProcessor : MonoBehaviour
 {
     public TargetPositionUpdater targetPositionUpdater;
+    private CameraHistoryRecorder _cameraHistory;
+
 
     private IReceiver _receiver;
     private Thread _receiveThread;
     private Queue<ReceivedData> _receivedDataQueue = new(40);
 
-    private double _lastAppliedTimestamp = 0;
 
     private readonly object _queueLock = new();
 
@@ -20,6 +21,9 @@ public class ReceiverProcessor : MonoBehaviour
     private void Start()
     {
         _receiver = new UdpReceiver(12345);
+        _cameraHistory = FindObjectOfType<CameraHistoryRecorder>();
+
+
         RunThread();
     }
 
@@ -30,21 +34,23 @@ public class ReceiverProcessor : MonoBehaviour
             if (_receivedDataQueue.Count > 0)
             {
                 var receivedData = _receivedDataQueue.Dequeue();
-
                 double incomingTimestamp = receivedData.GetTimeStamp();
 
-                // Sýra dýþý gelen paketi atla
-                if (incomingTimestamp > _lastAppliedTimestamp)
+                var closestSnapshot = _cameraHistory.GetClosestSnapshot(incomingTimestamp);
+                if (closestSnapshot.HasValue)
                 {
-                    targetPositionUpdater.CubePositionSetter(receivedData.GetPosition(), receivedData.GetRotation());
-                    Debug.Log($"STAJ: Applied new data | Incoming: {incomingTimestamp}, Last: {_lastAppliedTimestamp}, Diff: {(incomingTimestamp - _lastAppliedTimestamp) * 1000.0:F2} ms");
+                    var snap = closestSnapshot.Value;
 
-                    _lastAppliedTimestamp = incomingTimestamp;
+                    targetPositionUpdater.CubePositionSetter(
+                        receivedData.GetPosition(),
+                        receivedData.GetRotation(),
+                        snap.position,
+                        snap.rotation
+                    );
 
-                }
-                else
-                {
-                    Debug.LogWarning($"STAJ: Skipped outdated data | Incoming: {incomingTimestamp} < Last: {_lastAppliedTimestamp}");
+                    Debug.Log("Received data's timestamp: " + incomingTimestamp +
+                              " | Closest Snapshot's timestamp: " + snap.timestamp +
+                              " | Dif (ms): " + ((incomingTimestamp - snap.timestamp) * 1000).ToString("F3"));
                 }
             }
         }

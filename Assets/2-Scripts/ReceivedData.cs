@@ -24,7 +24,6 @@ public class ReceivedData
         );
     }
 
-
     public Quaternion GetRotation()
     {
         return new Quaternion(
