@@ -51,6 +51,27 @@ public class TargetPositionUpdater : MonoBehaviour
     public void ConfigureOffsetMultiple()
     {
         StartCoroutine(ConfigureOffsetRoutine());
+
+        // Butona basýldýðýnda geçici olarak smoothing hýzýný artýr
+        StartCoroutine(TemporaryBoostSmoothing(5f, 1.5f));
+        // ilk parametre: hedef süre (saniye), ikinci parametre: hedef yüksek hýz
+    }
+
+    private IEnumerator TemporaryBoostSmoothing(float duration, float boostedSpeed)
+    {
+        float originalSpeed = smoothingSpeed; // mevcut hýz
+        smoothingSpeed = boostedSpeed;        // anýnda yüksek hýz
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            // yüksek hýzdan eski hýza lineer düþüþ
+            smoothingSpeed = Mathf.Lerp(boostedSpeed, originalSpeed, elapsed / duration);
+            yield return null;
+        }
+
+        smoothingSpeed = originalSpeed; // garanti olsun diye sonunda eski hýza al
     }
 
     private IEnumerator ConfigureOffsetRoutine()
