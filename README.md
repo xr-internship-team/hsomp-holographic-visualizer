@@ -39,7 +39,7 @@ git clone https://github.com/xr-internship-team/hsomp-holographic-visualizer.git
 3. When the HoloLens receives external tracking data, holograms will remain **stable** even if SLAM/IMU tracking degrades.
 
 <p align="center">
-  <img src="./docs/demo_video.gif" alt="Demo Video" />
+  <img src="./docs/demo_video.gif" alt="Demo Video" width="600" />
 </p>
 
 ## 📜 License
