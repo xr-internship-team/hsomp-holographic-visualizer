@@ -28,9 +28,10 @@ By receiving **external tracking data** from a camera that detects a QR code on 
 git clone https://github.com/xr-internship-team/hsomp-holographic-visualizer.git
 ```
 1. Open the project in **Unity**.  
-2. Install the **Mixed Reality Toolkit (MRTK)** package.  
-3. Configure the UDP receiver with the correct IP and port.  
-4. Build and deploy the application to HoloLens 2.
+2. Install the **Mixed Reality Toolkit v1.0.2209.0 (MRTK)** package from [Microsoft Download Center](https://www.microsoft.com/en-us/download/details.aspx?id=102778). 
+3. Set the path of the unity project on Mixed Reality Toolkit.
+4. Configure the UDP receiver with the correct IP and port.  
+5. Build and deploy the application to HoloLens 2.
 
 ## ▶ Usage
 1. Start the **outside marker tracking** system from the companion repository:  
