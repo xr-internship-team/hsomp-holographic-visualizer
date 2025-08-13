@@ -4,10 +4,22 @@ This repository is part of the **HSOMP (Hologram Stability on Moving Platform)**
 It contains a **Unity + MRTK** application for the HoloLens 2 that receives position and rotation data from an external camera (via UDP) and uses it to **stabilize holograms**, even when the **SLAM** and **IMU** sensors fail.
 
 
+
+
 ## 📌 Problem
 On moving platforms (e.g., vehicles, tanks), HoloLens 2 **IMU sensors** may produce drift errors.  
 If SLAM tracking is also degraded, holograms will drift and lose alignment.  
 By receiving **external tracking data** from a camera that detects a QR code on the headset, this system can maintain stable hologram placement.
+
+
+<p align="center">
+  <img src="./docs/HLwithTagOnIt.jpeg" alt="Hololens 2 with QR" width="400" />
+  <br>
+  <em>
+    Microsoft Hololens 2 with a QR for external tracking
+  </em>
+  
+</p>
 
 ## 🚀 Features
 - **Unity MRTK-based HoloLens app**  
