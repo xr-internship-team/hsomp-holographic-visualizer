@@ -1791,6 +1791,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetPositionUpdater: {fileID: 928301059}
+  udpPort: 12345
+  queueCapacity: 40
 --- !u!4 &259831226
 Transform:
   m_ObjectHideFlags: 0
@@ -2452,15 +2454,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.435
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.078
+      value: 0.38
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.181
+      value: 2.09
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3456,15 +3458,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.39
+      value: -0.53
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.078
+      value: 0.38
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.244
+      value: 2.1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4432,6 +4434,7 @@ MonoBehaviour:
   markerTransform: {fileID: 963194228}
   objectTransform: {fileID: 250285586}
   referenceCube: {fileID: 1512347793}
+  temporarySmoothingSpeed: 1.5
   configureInterval: 1
   configureSteps: 5
 --- !u!4 &928301060
@@ -6610,6 +6613,7 @@ MonoBehaviour:
   configureOffsetButton: {fileID: 263148329}
   configureOffsetButtonText: {fileID: 2070854339}
   interpolationToggle: {fileID: 457539745}
+  smoothingStep: 0.1
 --- !u!4 &1573222833
 Transform:
   m_ObjectHideFlags: 0
@@ -7370,6 +7374,9 @@ MonoBehaviour:
   trackedObject: {fileID: 250285582}
   playspaceTransform: {fileID: 963194228}
   refObject: {fileID: 1512347790}
+  loggingEnabled: 1
+  logIntervalSecond: 0.1
+  logThreadSleepMs: 10
 --- !u!1 &2012349921
 GameObject:
   m_ObjectHideFlags: 0

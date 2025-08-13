@@ -3,9 +3,11 @@ using TMPro;
 using Microsoft.MixedReality.Toolkit.UI;
 using System.Collections;
 
+/// Handles all button interactions in the UI for controlling smoothing, offset configuration, 
+/// interpolation toggle, and TimeSign updates.
 public class ButtonHandler : MonoBehaviour
 {
-    public Logger logger;
+    public Logger logger; // Reference to Logger for time sign updates
 
     public Interactable TimeSignButton;
     public TextMeshPro TimeSignButtonText;
@@ -21,16 +23,17 @@ public class ButtonHandler : MonoBehaviour
 
     public Interactable interpolationToggle;
 
-    private Coroutine configureCoroutine = null;
+    [Header("Smoothing Step Settings")]
+    public float smoothingStep = 0.1f; // Increment/decrement step for smoothing, adjustable in Inspector
 
+    private Coroutine configureCoroutine = null; // Coroutine reference for countdown display
 
-
-
-    private int timeSign;
-    private float smoothingSpeed;
+    private int timeSign;                // Current time sign
+    private float smoothingSpeed;        // Current smoothing speed
 
     #region UnityEventFunctions
-    // Start is called before the first frame update
+
+    /// Unity Start method. Adds listeners to buttons and initializes UI values.
     void Start()
     {
         if (TimeSignButton != null)
@@ -40,8 +43,11 @@ public class ButtonHandler : MonoBehaviour
 
         if (targetPositionUpdater != null)
         {
-            smoothLevelButtonInc.OnClick.AddListener(SmoothIncButtonClicked);
-            smoothLevelButtonDec.OnClick.AddListener(SmoothDecButtonClicked);
+            if (smoothLevelButtonInc != null)
+                smoothLevelButtonInc.OnClick.AddListener(SmoothIncButtonClicked);
+
+            if (smoothLevelButtonDec != null)
+                smoothLevelButtonDec.OnClick.AddListener(SmoothDecButtonClicked);
         }
 
         if (configureOffsetButton != null)
@@ -54,8 +60,10 @@ public class ButtonHandler : MonoBehaviour
             interpolationToggle.OnClick.AddListener(OnInterpolationToggleChanged);
         }
 
+        // Initialize values from Logger and TargetPositionUpdater
         timeSign = logger.GetTimeSign();
         smoothingSpeed = targetPositionUpdater.GetSmoothingSpeed();
+
         smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
         TimeSignButtonText.text = "TimeSign: " + timeSign;
     }
@@ -63,6 +71,8 @@ public class ButtonHandler : MonoBehaviour
 
     #region PrivateFunctions
 
+    /// Called when the interpolation toggle is changed.
+    /// Enables/disables interpolation in TargetPositionUpdater.
     private void OnInterpolationToggleChanged()
     {
         bool isToggled = interpolationToggle.IsToggled;
@@ -74,6 +84,8 @@ public class ButtonHandler : MonoBehaviour
         }
     }
 
+    /// Called when the configure offset button is clicked.
+    /// Starts the offset configuration and countdown coroutine.
     private void ConfigureOffsetClicked()
     {
         if (targetPositionUpdater != null)
@@ -83,7 +95,7 @@ public class ButtonHandler : MonoBehaviour
             if (configureCoroutine != null)
                 StopCoroutine(configureCoroutine);
 
-            // Toplam süre = interval * steps
+            // Calculate total duration of the configuration
             float totalTime = targetPositionUpdater.configureInterval * targetPositionUpdater.configureSteps;
             configureCoroutine = StartCoroutine(ConfigureOffsetCountdown(totalTime, targetPositionUpdater.configureSteps));
 
@@ -91,9 +103,10 @@ public class ButtonHandler : MonoBehaviour
         }
     }
 
+    /// Increase smoothing speed and update UI.
     private void SmoothIncButtonClicked()
     {
-        smoothingSpeed += 0.1f;
+        smoothingSpeed += smoothingStep;
         smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
         Debug.Log("Inc button clicked. smooth = " + smoothingSpeed.ToString("F1"));
 
@@ -102,9 +115,11 @@ public class ButtonHandler : MonoBehaviour
             targetPositionUpdater.SetSmoothingSpeed(smoothingSpeed);
         }
     }
+
+    /// Decrease smoothing speed and update UI.
     private void SmoothDecButtonClicked()
     {
-        smoothingSpeed -= 0.1f;
+        smoothingSpeed -= smoothingStep;
         smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
         Debug.Log("Dec button clicked. smooth = " + smoothingSpeed.ToString("F1"));
 
@@ -114,6 +129,7 @@ public class ButtonHandler : MonoBehaviour
         }
     }
 
+    /// Increases the time sign and updates logger and UI.
     private void TimeSignButtonClicked()
     {
         timeSign += 1;
@@ -125,8 +141,9 @@ public class ButtonHandler : MonoBehaviour
             logger.SetTimeSign(timeSign);
         }
     }
-    #endregion
 
+    /// Countdown display coroutine for offset configuration.
+    /// Updates the configureOffsetButtonText each interval.
     private IEnumerator ConfigureOffsetCountdown(float totalDuration, int steps)
     {
         float interval = totalDuration / steps;
@@ -139,4 +156,5 @@ public class ButtonHandler : MonoBehaviour
 
         configureOffsetButtonText.text = "Configure offset done.\nPress to configure again.\n\n\n";
     }
+    #endregion
 }
