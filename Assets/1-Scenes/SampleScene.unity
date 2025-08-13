@@ -2585,7 +2585,7 @@ GameObject:
   - component: {fileID: 426499369}
   - component: {fileID: 426499368}
   m_Layer: 0
-  m_Name: Smooth Level
+  m_Name: Smooth Factor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2631,7 +2631,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Smooth Level
+  m_text: Smooth Factor
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6a84f857bec7e7345843ae29404c57ce, type: 2}
   m_sharedMaterial: {fileID: 21202819797275496, guid: 6a84f857bec7e7345843ae29404c57ce, type: 2}

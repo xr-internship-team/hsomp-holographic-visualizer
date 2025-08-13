@@ -1,51 +1,47 @@
+// SmoothFactorController.cs
+
 using Microsoft.MixedReality.Toolkit.UI;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class SmoothFactorController : MonoBehaviour
 {
     public TargetPositionUpdater targetUpdater;
 
     public Interactable increaseButton;
-    public Interactable  decreaseButton;
+    public Interactable decreaseButton;
     public TextMeshPro smoothCounterText;
 
-    private int _smoothLevel = 10;
-    private const int MinLevel = 0;
-    private const int MaxLevel = 20;
+    // Start with what you like to feel; 0.7 is a good default
+    [Range(0f, 1f)]
+    [SerializeField] private float _smoothFactor = 0.7f;
+
+    private const float Step = 0.05f; // finer steps than 0.1
+    private const float Min = 0.0f;
+    private const float Max = 1.0f;
 
     private void Start()
     {
         increaseButton.OnClick.AddListener(IncreaseSmooth);
         decreaseButton.OnClick.AddListener(DecreaseSmooth);
-        UpdateUI();
-        UpdateSmoothFactor();
+        Apply();
     }
 
     private void IncreaseSmooth()
     {
-        if (_smoothLevel >= MaxLevel) return;
-        _smoothLevel++;
-        UpdateSmoothFactor();
+        _smoothFactor = Mathf.Clamp(_smoothFactor + Step, Min, Max);
+        Apply();
     }
 
     private void DecreaseSmooth()
     {
-        if (_smoothLevel <= MinLevel) return;
-        _smoothLevel--;
-        UpdateSmoothFactor();
+        _smoothFactor = Mathf.Clamp(_smoothFactor - Step, Min, Max);
+        Apply();
     }
 
-    private void UpdateSmoothFactor()
+    private void Apply()
     {
-        var mappedValue = _smoothLevel / 10f;
-        targetUpdater.SetSmoothFactor(mappedValue);
-        UpdateUI();
-    }
-
-    private void UpdateUI()
-    {
-        smoothCounterText.text = $"Smooth Level: {_smoothLevel}";
+        targetUpdater.SetSmoothFactor(_smoothFactor);
+        smoothCounterText.text = $"Smooth Factor: {_smoothFactor:0.00}";
     }
 }
