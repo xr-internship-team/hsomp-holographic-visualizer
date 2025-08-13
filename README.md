@@ -40,7 +40,18 @@ git clone https://github.com/xr-internship-team/hsomp-holographic-visualizer.git
 
 <p align="center">
   <img src="./docs/demo_video.gif" alt="Demo Video" width="600" />
+  <br>
+  <em>
+    The pink airplane is a reference object showing the target position and rotation from the external camera.<br>
+    The textured airplane is the actual hologram, stabilized to match the reference using external tracking.
+  </em>
+  
 </p>
+
+## 🔗 Related Repository
+For the marker tracking and UDP data transmission system that provides position and rotation data to this Unity application, see:  
+[HSOMP Outside Marker Tracking](https://github.com/xr-internship-team/hsomp-outside-marker-tracking)
+
 
 ## 📜 License
 This project is licensed under the terms specified in the repository.
