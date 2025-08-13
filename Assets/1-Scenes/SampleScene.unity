@@ -1759,8 +1759,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87d876af2131a034e8a2709c53ea376f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentMode: 0
+  currentMode: 3
   targetPositionUpdater: {fileID: 928301059}
+  udpPort: 12345
+  renderDelayMs: 30
+  maxBufferSeconds: 0.5
+  baseLeadMs: 18
+  minDeltaTime: 0.005
 --- !u!4 &259831226
 Transform:
   m_ObjectHideFlags: 0
@@ -3567,7 +3572,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 711714726}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0438, y: 0.0455, z: 0.5}
+  m_LocalPosition: {x: 0, y: 1.5, z: 1}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4149,7 +4154,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   markerTransform: {fileID: 963194228}
   objectTransform: {fileID: 1154362456}
-  smoothFactor: 0
+  useExponentialSmoothing: 1
+  normalFollowSharpness: 10
+  fastFollowSharpness: 25
+  smoothFactor: 0.5
+  hardLockWhenFar: 1
+  snapDistance: 0.03
+  snapAngleDeg: 2
 --- !u!4 &928301060
 Transform:
   m_ObjectHideFlags: 0

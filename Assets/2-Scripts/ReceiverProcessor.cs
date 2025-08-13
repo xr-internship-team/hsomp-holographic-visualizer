@@ -1,3 +1,5 @@
+// ... usings
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -5,212 +7,279 @@ using UnityEngine;
 
 public class ReceiverProcessor : MonoBehaviour
 {
-    public enum ProcessingMode
-    {
-        None,
-        AdaptivePrediction,
-        TimestampCompare,
-        BufferInterpolation
-    }
+    public enum ProcessingMode { None, TimestampCompare, BufferInterpolation, Hybrid }
 
-    public ProcessingMode currentMode = ProcessingMode.None;
+    [Header("Mode & Target")]
+    public ProcessingMode currentMode = ProcessingMode.Hybrid;
     public TargetPositionUpdater targetPositionUpdater;
 
+    [Header("UDP")]
+    public int udpPort = 12345;
+
+    [Header("Buffered/Hybrid Timing")]
+    public double renderDelayMs = 30.0;
+    public double maxBufferSeconds = 0.5;
+    public double baseLeadMs = 18.0;
+    public float minDeltaTime = 0.005f;
+
     private IReceiver _receiver;
-    private Thread _receiveThread;
-    private Queue<ReceivedData> _receivedDataQueue = new(40);
-    private double _lastTimestamp;
+    private Thread _thread;
+    private volatile bool _running;
 
-    // Dinamik delay hesaplama
-    private double _predictedDelay = 0.03; // saniye
-    private const double DelaySmoothFactor = 0.1; // smoothing katsayısı
-    private ReceivedData _lastData;
-
-    // BufferInterpolation için
     private readonly List<ReceivedData> _buffer = new();
-    private const double BufferSize = 0.1; // saniye
+    private readonly object _lock = new();
+    private double _timeSyncOffset = double.NaN;
+
+    private static double UnityNow() => Time.realtimeSinceStartupAsDouble;
+    private static double NormalizeUnix(double ts) => (ts > 1e12) ? ts / 1000.0 : ts;
 
     private void Start()
     {
-        _receiver = new UdpReceiver(12345);
-        RunThread();
+        _receiver = new UdpReceiver(udpPort);
+        _running = true;
+        _thread = new Thread(ReceiveLoop) { IsBackground = true };
+        _thread.Start();
     }
 
     private void Update()
     {
-        lock (_receivedDataQueue)
+        switch (currentMode)
         {
-            if (_receivedDataQueue.Count > 0)
-            {
-                var data = _receivedDataQueue.Dequeue();
-
-                // Delay ölçümü
-                EstimateCurrentDelay(data);
-
-                switch (currentMode)
-                {
-                    case ProcessingMode.None:
-                        ProcessNone(data);
-                        break;
-                    case ProcessingMode.AdaptivePrediction:
-                        ProcessAdaptivePrediction(data);
-                        break;
-                    case ProcessingMode.TimestampCompare:
-                        ProcessTimestampCompare(data);
-                        break;
-                    case ProcessingMode.BufferInterpolation:
-                        ProcessBufferInterpolation(data);
-                        break;
-                }
-
-                _lastData = data;
-            }
-        }
-    }
-
-    private void ProcessNone(ReceivedData data)
-    {
-        targetPositionUpdater.CubePositionSetter(data.GetPosition(), data.GetRotation());
-    }
-
-    private void ProcessAdaptivePrediction(ReceivedData data)
-    {
-        if (_lastData == null)
-        {
-            ProcessNone(data);
-            return;
-        }
-
-        double dt = data.timestamp - _lastData.timestamp;
-        if (dt <= 0.00001 || dt > 0.2f)
-        {
-            ProcessNone(data);
-            return;
-        }
-
-        // Velocity hesapla
-        Vector3 velocity = (data.GetPosition() - _lastData.GetPosition()) / (float)dt;
-
-        // Maks hız limiti (ani zıplamaları engellemek için)
-        float maxSpeed = 2.0f;
-        if (velocity.magnitude > maxSpeed)
-            velocity = velocity.normalized * maxSpeed;
-
-        // Dinamik delay ile tahmin
-        Vector3 predictedPosition = data.GetPosition() + velocity * (float)_predictedDelay;
-        Quaternion predictedRotation = data.GetRotation();
-
-        targetPositionUpdater.CubePositionSetter(predictedPosition, predictedRotation);
-    }
-
-    private void ProcessTimestampCompare(ReceivedData data)
-    {
-        if (_lastData == null)
-        {
-            ProcessNone(data);
-            return;
-        }
-
-        double targetTimestamp = data.timestamp - _predictedDelay;
-        if (Math.Abs(_lastData.timestamp - targetTimestamp) < 0.0001)
-        {
-            ProcessNone(data);
-            return;
-        }
-
-        // İki veri arasında linear interpolation
-        Vector3 interpolatedPos = Vector3.Lerp(_lastData.GetPosition(), data.GetPosition(), 0.5f);
-        Quaternion interpolatedRot = Quaternion.Slerp(_lastData.GetRotation(), data.GetRotation(), 0.5f);
-
-        targetPositionUpdater.CubePositionSetter(interpolatedPos, interpolatedRot);
-    }
-
-    private void ProcessBufferInterpolation(ReceivedData data)
-    {
-        _buffer.Add(data);
-
-        // Eski verileri temizle
-        _buffer.RemoveAll(d => data.timestamp - d.timestamp > BufferSize);
-
-        double renderTimestamp = data.timestamp - _predictedDelay;
-        ReceivedData prev = null, next = null;
-
-        foreach (var d in _buffer)
-        {
-            if (d.timestamp <= renderTimestamp) prev = d;
-            if (d.timestamp > renderTimestamp)
-            {
-                next = d;
+            case ProcessingMode.None:
+                if (TryPopLatest(out var d0))
+                    targetPositionUpdater.CubePositionSetterTimed(d0.GetPosition(), d0.GetRotation(), UnityNow());
                 break;
+
+            case ProcessingMode.TimestampCompare:
+                ApplyTimestampCompareTimed();
+                break;
+
+            case ProcessingMode.BufferInterpolation:
+                if (TryGetInterpolatedState(out var p1, out var r1, out var remoteT1))
+                {
+                    double unityT = remoteT1 + _timeSyncOffset;
+                    targetPositionUpdater.CubePositionSetterTimed(p1, r1, unityT);
+                }
+                else if (PeekLatest(out var d1))
+                {
+                    targetPositionUpdater.CubePositionSetterTimed(d1.GetPosition(), d1.GetRotation(), UnityNow());
+                }
+                break;
+
+            case ProcessingMode.Hybrid:
+                ApplyHybridTimed();
+                break;
+        }
+    }
+
+    // ---------- TimestampCompare (timed) ----------
+    private void ApplyTimestampCompareTimed()
+    {
+        if (!TryPopLatest(out var nowData)) return;
+
+        // Try peek previous for simple 2-sample interpolation
+        if (!PeekPrev(out var prevData))
+        {
+            targetPositionUpdater.CubePositionSetterTimed(nowData.GetPosition(), nowData.GetRotation(), UnityNow());
+            return;
+        }
+
+        double tPrev = NormalizeUnix(prevData.timestamp);
+        double tNow  = NormalizeUnix(nowData.timestamp);
+        double targetRemoteT = tNow - renderDelayMs / 1000.0;
+
+        float alpha;
+        if (Mathf.Abs((float)(tNow - tPrev)) < 1e-6f || targetRemoteT <= tPrev) alpha = 1f;
+        else if (targetRemoteT >= tNow) alpha = 0f;
+        else alpha = (float)((targetRemoteT - tPrev) / (tNow - tPrev));
+
+        Vector3 pos = Vector3.Lerp(prevData.GetPosition(), nowData.GetPosition(), alpha);
+        Quaternion rot = Quaternion.Slerp(prevData.GetRotation(), nowData.GetRotation(), alpha);
+
+        double unitySampleT = targetRemoteT + _timeSyncOffset;
+        targetPositionUpdater.CubePositionSetterTimed(pos, rot, unitySampleT);
+    }
+
+    // ---------- Hybrid (timed with short prediction) ----------
+    private void ApplyHybridTimed()
+    {
+        if (!TryGetInterpolatedBracket(out var a, out var b, out var ta, out var tb,
+                                       out var interpPos, out var interpRot, out var remoteRenderTime))
+        {
+            // fallbacks
+            if (TryGetInterpolatedState(out var p, out var r, out var remT))
+                targetPositionUpdater.CubePositionSetterTimed(p, r, remT + _timeSyncOffset);
+            else if (PeekLatest(out var latest))
+                targetPositionUpdater.CubePositionSetterTimed(latest.GetPosition(), latest.GetRotation(), UnityNow());
+            return;
+        }
+
+        double dt = Mathf.Max(minDeltaTime, (float)(tb - ta));
+        Vector3 vel = (b.GetPosition() - a.GetPosition()) / (float)dt;
+
+        Quaternion dq = b.GetRotation() * Quaternion.Inverse(a.GetRotation());
+        dq.ToAngleAxis(out float angleDeg, out Vector3 axis);
+        if (float.IsNaN(axis.x) || axis == Vector3.zero) { axis = Vector3.up; angleDeg = 0f; }
+        float angVelDegPerSec = angleDeg / (float)dt;
+
+        double leadSec = Mathf.Max(0f, (float)baseLeadMs) / 1000.0;
+        Vector3 predictedPos = interpPos + vel * (float)leadSec;
+        Quaternion predictedRot = Quaternion.AngleAxis(angVelDegPerSec * (float)leadSec, axis.normalized) * interpRot;
+        predictedRot.Normalize();
+
+        double remoteTargetT = remoteRenderTime + leadSec;
+        double unitySampleT  = remoteTargetT + _timeSyncOffset;
+
+        targetPositionUpdater.CubePositionSetterTimed(predictedPos, predictedRot, unitySampleT);
+    }
+
+    // ---------- Interpolation helpers ----------
+    private bool TryGetInterpolatedState(out Vector3 pos, out Quaternion rot, out double remoteT)
+    {
+        pos = default; rot = default; remoteT = 0;
+
+        lock (_lock)
+        {
+            if (_buffer.Count < 2) return false;
+
+            if (double.IsNaN(_timeSyncOffset))
+                _timeSyncOffset = UnityNow() - NormalizeUnix(_buffer[0].timestamp);
+
+            double unityRenderNow   = UnityNow() - (renderDelayMs / 1000.0);
+            double remoteRenderTime = unityRenderNow - _timeSyncOffset;
+
+            // slide window
+            while (_buffer.Count >= 2)
+            {
+                double t0 = NormalizeUnix(_buffer[0].timestamp);
+                double t1 = NormalizeUnix(_buffer[1].timestamp);
+                if (t1 <= remoteRenderTime) _buffer.RemoveAt(0); else break;
+            }
+            if (_buffer.Count < 2) return false;
+
+            var A = _buffer[0]; var B = _buffer[1];
+            double ta = NormalizeUnix(A.timestamp), tb = NormalizeUnix(B.timestamp);
+
+            if (remoteRenderTime <= ta) { pos = A.GetPosition(); rot = A.GetRotation(); remoteT = ta; return true; }
+            if (remoteRenderTime >= tb) { pos = B.GetPosition(); rot = B.GetRotation(); remoteT = tb; return true; }
+
+            float t = (float)((remoteRenderTime - ta) / Mathf.Max(1e-6f, (float)(tb - ta)));
+            pos = Vector3.Lerp(A.GetPosition(), B.GetPosition(), t);
+            rot = Quaternion.Slerp(A.GetRotation(), B.GetRotation(), t);
+            remoteT = remoteRenderTime;
+            return true;
+        }
+    }
+
+    private bool TryGetInterpolatedBracket(out ReceivedData a, out ReceivedData b,
+                                           out double ta, out double tb,
+                                           out Vector3 interpPos, out Quaternion interpRot,
+                                           out double remoteRenderTime)
+    {
+        a=null;b=null;ta=tb=0;interpPos=default;interpRot=default;remoteRenderTime=0;
+
+        lock (_lock)
+        {
+            if (_buffer.Count < 2) return false;
+
+            if (double.IsNaN(_timeSyncOffset))
+                _timeSyncOffset = UnityNow() - NormalizeUnix(_buffer[0].timestamp);
+
+            double unityRenderNow   = UnityNow() - (renderDelayMs / 1000.0);
+            remoteRenderTime        = unityRenderNow - _timeSyncOffset;
+
+            // slide window
+            while (_buffer.Count >= 2)
+            {
+                double t0 = NormalizeUnix(_buffer[0].timestamp);
+                double t1 = NormalizeUnix(_buffer[1].timestamp);
+                if (t1 <= remoteRenderTime) _buffer.RemoveAt(0); else break;
+            }
+            if (_buffer.Count < 2) return false;
+
+            a = _buffer[0]; b = _buffer[1];
+            ta = NormalizeUnix(a.timestamp); tb = NormalizeUnix(b.timestamp);
+
+            if (remoteRenderTime <= ta) { interpPos = a.GetPosition(); interpRot = a.GetRotation(); return true; }
+            if (remoteRenderTime >= tb) { interpPos = b.GetPosition(); interpRot = b.GetRotation(); return true; }
+
+            float t = (float)((remoteRenderTime - ta) / Mathf.Max(1e-6f, (float)(tb - ta)));
+            interpPos = Vector3.Lerp(a.GetPosition(), b.GetPosition(), t);
+            interpRot = Quaternion.Slerp(a.GetRotation(), b.GetRotation(), t);
+            return true;
+        }
+    }
+
+    // ---------- queue / receive ----------
+    private void ReceiveLoop()
+    {
+        while (_running)
+        {
+            var d = _receiver.GetData();
+            if (d == null) continue;
+
+            double ts = NormalizeUnix(d.timestamp);
+            lock (_lock)
+            {
+                _buffer.Add(d);
+                PruneBuffer(ts);
             }
         }
-
-        if (prev != null && next != null)
-        {
-            double range = next.timestamp - prev.timestamp;
-            double t = (renderTimestamp - prev.timestamp) / range;
-            Vector3 pos = Vector3.Lerp(prev.GetPosition(), next.GetPosition(), (float)t);
-            Quaternion rot = Quaternion.Slerp(prev.GetRotation(), next.GetRotation(), (float)t);
-            targetPositionUpdater.CubePositionSetter(pos, rot);
-        }
-        else
-        {
-            targetPositionUpdater.CubePositionSetter(data.GetPosition(), data.GetRotation());
-        }
     }
 
-    private void EstimateCurrentDelay(ReceivedData data)
+    private void PruneBuffer(double newestTs)
     {
-        // Burada Python'dan gelen timestamp Unix epoch saniye cinsinden
-        double now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
-        double networkDelay = now - data.timestamp;
-
-        // Low-pass filter ile smoothing
-        _predictedDelay = _predictedDelay * (1 - DelaySmoothFactor) + networkDelay * DelaySmoothFactor;
-
-        Debug.Log($"UDP Delay: {networkDelay * 1000:F2} ms | Smoothed: {_predictedDelay * 1000:F2} ms");
+        double minTs = newestTs - Mathf.Max(0.05f, (float)maxBufferSeconds);
+        int remove = 0;
+        for (int i = 0; i < _buffer.Count; i++)
+        {
+            double t = NormalizeUnix(_buffer[i].timestamp);
+            if (t < minTs) remove++;
+            else break;
+        }
+        if (remove > 0) _buffer.RemoveRange(0, Mathf.Min(remove, _buffer.Count));
+        if (_buffer.Count > 256) _buffer.RemoveRange(0, _buffer.Count - 256);
     }
 
+    private bool TryPopLatest(out ReceivedData d)
+    {
+        lock (_lock)
+        {
+            if (_buffer.Count == 0) { d=null; return false; }
+            d = _buffer[^1];
+            _buffer.Clear();
+            return true;
+        }
+    }
+
+    private bool PeekLatest(out ReceivedData d)
+    {
+        lock (_lock)
+        {
+            if (_buffer.Count == 0) { d=null; return false; }
+            d = _buffer[^1];
+            return true;
+        }
+    }
+    private bool PeekPrev(out ReceivedData d)
+    {
+        lock (_lock)
+        {
+            if (_buffer.Count < 2) { d=null; return false; }
+            d = _buffer[^2];
+            return true;
+        }
+    }
+    
     public void SetProcessingMode(int modeIndex)
     {
-        currentMode = (ProcessingMode)modeIndex;
+        int modeCount = Enum.GetValues(typeof(ProcessingMode)).Length;
+        currentMode = (ProcessingMode)Mathf.Clamp(modeIndex, 0, modeCount - 1);
         Debug.Log("Processing mode changed to: " + currentMode);
     }
 
-    private void RunThread()
-    {
-        _receiveThread = new Thread(ReceiveThread);
-        _receiveThread.IsBackground = true;
-        _receiveThread.Start();
-    }
+    private void OnDisable() { _running=false; _receiver?.Close(); if (_thread!=null && _thread.IsAlive) _thread.Join(); }
+    private void OnDestroy() { _running=false; _receiver?.Close(); if (_thread!=null && _thread.IsAlive) _thread.Join(); }
 
-    private void ReceiveThread()
-    {
-        while (true)
-        {
-            var data = _receiver.GetData();
-            if (data != null && data.timestamp > _lastTimestamp)
-            {
-                lock (_receivedDataQueue)
-                {
-                    _receivedDataQueue.Enqueue(data);
-                }
-                _lastTimestamp = data.timestamp;
-            }
-        }
-    }
-
-    private void OnDisable()
-    {
-        _receiver.Close();
-        _receiveThread?.Abort();
-        StopAllCoroutines();
-    }
-
-    private void OnDestroy()
-    {
-        _receiver.Close();
-        _receiveThread?.Abort();
-        StopAllCoroutines();
-    }
+    
 }

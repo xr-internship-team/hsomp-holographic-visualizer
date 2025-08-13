@@ -1,13 +1,12 @@
 using Microsoft.MixedReality.Toolkit.UI;
 using TMPro;
 using UnityEngine;
+using System;
 
 public class ModeSwitchButton : MonoBehaviour
 {
     public ReceiverProcessor receiverProcessor;
-
     public Interactable interactable;
-
     public TextMeshPro modeText;
 
     private void Start()
@@ -18,9 +17,10 @@ public class ModeSwitchButton : MonoBehaviour
 
     private void CycleMode()
     {
-        int nextMode = ((int)receiverProcessor.currentMode + 1) % 4;
-        receiverProcessor.SetProcessingMode(nextMode);
-        Debug.Log("Cycled to mode: " + (ReceiverProcessor.ProcessingMode)nextMode);
+        int modeCount = Enum.GetValues(typeof(ReceiverProcessor.ProcessingMode)).Length;
+        int next = ((int)receiverProcessor.currentMode + 1) % modeCount;
+        receiverProcessor.SetProcessingMode(next);
         modeText.text = $"Mode: {receiverProcessor.currentMode}";
+        Debug.Log("Cycled to mode: " + receiverProcessor.currentMode);
     }
 }

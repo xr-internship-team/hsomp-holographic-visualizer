@@ -8,10 +8,10 @@ public class SmoothFactorController : MonoBehaviour
     public TargetPositionUpdater targetUpdater;
 
     public Interactable increaseButton;
-    public Interactable  decreaseButton;
+    public Interactable decreaseButton;
     public TextMeshPro smoothCounterText;
 
-    private int _smoothLevel = 10;
+    private int _smoothLevel = 10;       // 0..20
     private const int MinLevel = 0;
     private const int MaxLevel = 20;
 
@@ -39,7 +39,8 @@ public class SmoothFactorController : MonoBehaviour
 
     private void UpdateSmoothFactor()
     {
-        var mappedValue = _smoothLevel / 10f;
+        // Map 0..20 level → 0..1 lerp factor
+        var mappedValue = _smoothLevel / 20f;
         targetUpdater.SetSmoothFactor(mappedValue);
         UpdateUI();
     }
