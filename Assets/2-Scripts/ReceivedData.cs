@@ -3,32 +3,35 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
+/// Represents the data structure received over UDP.
+/// Stores timestamp, ID, position difference, and rotation difference.
 [Serializable]
 public class ReceivedData
 {
-    public string timestamp;
-    public int id;
-    public List<float> positionDif;
-    public List<float> rotationDif;
-
-    // ... mevcut GetPosition / GetRotation metodların aynı kalsın ...
+    public double timestamp;           // Time when the data was sent (Unix Epoch timestamp)
+    public int id;                      // Identifier for the sender/object
+    public List<float> positionDif;     // Position difference values (x, y, z)
+    public List<float> rotationDif;     // Rotation difference values (x, y, z, w)
 
     // DateTime isteyen kodlar için ek, mevcut kullanımları bozmaz.
     public DateTime TimeStamp
     {
         get
         {
-            if (string.IsNullOrEmpty(timestamp)) return DateTime.MinValue;
-            // ISO 8601 gibi formatlar için RoundtripKind iyi çalışır: "2025-08-11T01:23:45.678Z"
-            if (DateTime.TryParse(timestamp, CultureInfo.InvariantCulture,
-                                  DateTimeStyles.RoundtripKind, out var dt))
-                return dt;
-
-            // Gerekirse burada farklı format denemeleri eklenebilir.
-            return DateTime.MinValue;
+            // Eğer timestamp Unix Epoch (double) olarak geliyorsa:
+            // Unix epoch seconds to UTC DateTime
+            return DateTimeOffset.FromUnixTimeSeconds((long)timestamp).UtcDateTime;
         }
     }
 
+    #region Getters & Setters
+    /// Returns the timestamp of the received data as double (Unix Epoch seconds).
+    public double GetTimeStamp()
+    {
+        return timestamp;
+    }
+
+    /// Converts positionDif list to a Unity Vector3.
     public Vector3 GetPosition()
     {
         return new Vector3(
@@ -38,6 +41,7 @@ public class ReceivedData
         );
     }
 
+    /// Converts rotationDif list to a Unity Quaternion.
     public Quaternion GetRotation()
     {
         return new Quaternion(
@@ -47,4 +51,5 @@ public class ReceivedData
             rotationDif[3]
         );
     }
+    #endregion
 }
