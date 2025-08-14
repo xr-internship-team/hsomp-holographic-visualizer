@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 /// Represents the data structure received over UDP.
 /// Stores timestamp, ID, position difference, and rotation difference.
-[Serializable] 
+[Serializable]
 public class ReceivedData
 {
     public double timestamp;           // Time when the data was sent (Unix Epoch timestamp)
@@ -12,9 +13,19 @@ public class ReceivedData
     public List<float> positionDif;     // Position difference values (x, y, z)
     public List<float> rotationDif;     // Rotation difference values (x, y, z, w)
 
+    // DateTime isteyen kodlar için ek, mevcut kullanımları bozmaz.
+    public DateTime TimeStamp
+    {
+        get
+        {
+            // Eğer timestamp Unix Epoch (double) olarak geliyorsa:
+            // Unix epoch seconds to UTC DateTime
+            return DateTimeOffset.FromUnixTimeSeconds((long)timestamp).UtcDateTime;
+        }
+    }
 
     #region Getters & Setters
-    /// Returns the timestamp of the received data.
+    /// Returns the timestamp of the received data as double (Unix Epoch seconds).
     public double GetTimeStamp()
     {
         return timestamp;
