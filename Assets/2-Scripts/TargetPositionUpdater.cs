@@ -13,6 +13,8 @@ public class TargetPositionUpdater : MonoBehaviour
     private Vector3 positionOffset = Vector3.zero;
     private Quaternion rotationOffset = Quaternion.identity;
 
+    public float temporarySmoothingSpeed = 1.5f; // default value
+
     private float smoothingSpeed = 1f; // yumuþaklýk seviyesi (arttýrýrsan daha hýzlý geçer)
 
     private bool offsetConfigured = false;
@@ -51,6 +53,24 @@ public class TargetPositionUpdater : MonoBehaviour
     public void ConfigureOffsetMultiple()
     {
         StartCoroutine(ConfigureOffsetRoutine());
+        StartCoroutine(TemporaryBoostSmoothing(configureInterval * configureSteps, temporarySmoothingSpeed)); // Boost smoothing speed temporarily
+
+    }
+
+    private IEnumerator TemporaryBoostSmoothing(float duration, float boostedSpeed)
+    {
+        float originalSpeed = smoothingSpeed;
+        smoothingSpeed = boostedSpeed;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            smoothingSpeed = Mathf.Lerp(boostedSpeed, originalSpeed, elapsed / duration);
+            yield return null;
+        }
+
+        smoothingSpeed = originalSpeed;
     }
 
     private IEnumerator ConfigureOffsetRoutine()
