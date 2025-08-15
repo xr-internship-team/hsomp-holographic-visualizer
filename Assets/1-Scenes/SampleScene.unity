@@ -371,6 +371,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bec163efd48bdd0469c8b29463302de4, type: 3}
+--- !u!114 &341285803 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3910671111616674740, guid: 611e414febd09e241a327ceac87ace7c, type: 3}
+  m_PrefabInstance: {fileID: 515776034}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &457539745 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 829139259185929648, guid: 65e509956bbb7674cb91dae9610fb1a4, type: 3}
@@ -396,7 +407,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3910671112261392921, guid: 611e414febd09e241a327ceac87ace7c, type: 3}
       propertyPath: m_Name
-      value: Time Sign TextMeshPro
+      value: TextMeshPro
       objectReference: {fileID: 0}
     - target: {fileID: 3910671112496288016, guid: 611e414febd09e241a327ceac87ace7c, type: 3}
       propertyPath: m_Name
@@ -1022,7 +1033,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1219176214}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0077, y: 0.0274, z: 0}
+  m_LocalPosition: {x: 0.023, y: 0.053, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1216,7 +1227,7 @@ MonoBehaviour:
   interpolationToggle: {fileID: 457539745}
   smoothLevelButtonText: {fileID: 2075987783}
   configureOffsetButtonText: {fileID: 1313397386}
-  timeSignButtonText: {fileID: 1578419057}
+  timeSignButtonText: {fileID: 341285803}
   smoothingStep: 0.1
 --- !u!4 &1573222833
 Transform:
@@ -1233,17 +1244,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1578419057 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3910671112261392923, guid: 611e414febd09e241a327ceac87ace7c, type: 3}
-  m_PrefabInstance: {fileID: 515776034}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1917332195
 GameObject:
   m_ObjectHideFlags: 0
@@ -1356,7 +1356,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 829139259185929649, guid: 65e509956bbb7674cb91dae9610fb1a4, type: 3}
       propertyPath: m_Name
-      value: SmoothLevelSwitch
+      value: InterpolationSwitch
       objectReference: {fileID: 0}
     - target: {fileID: 829139259185929651, guid: 65e509956bbb7674cb91dae9610fb1a4, type: 3}
       propertyPath: m_RootOrder

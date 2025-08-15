@@ -12,7 +12,7 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: Stajerler
+  companyName: Stajyerler
   productName: Prototype-S
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
@@ -136,8 +136,10 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 3.0
-  preloadedAssets: []
+  bundleVersion: 5.0.0
+  preloadedAssets:
+  - {fileID: 8437582872859316215, guid: 773937caefd53ba4d8bd6d3106e1631c, type: 2}
+  - {fileID: -3208837665428679491, guid: 7d3779133384c5147b99c5720bef8889, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -744,7 +746,7 @@ PlayerSettings:
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
   metroPackageName: Template3D
-  metroPackageVersion: 2.61.0.0
+  metroPackageVersion: 2.50.0.0
   metroCertificatePath: Assets\WSATestCertificate.pfx
   metroCertificatePassword: 
   metroCertificateSubject: DefaultCompany
