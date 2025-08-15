@@ -8,28 +8,29 @@ public class TargetPositionUpdater : MonoBehaviour
     public Transform objectTransform;    // Target object to be updated
     public Transform referenceCube;      // Manually placed reference cube in the scene
 
-    // Target position & rotation calculated from received data
-    private Vector3 _targetPosition;
-    private Quaternion _targetRotation;
-
-    // Offsets to align target object with reference cube
-    private Vector3 positionOffset = Vector3.zero;
-    private Quaternion rotationOffset = Quaternion.identity;
-
-    [Header("Smoothing")]
-    [Tooltip("Higher values result in faster movement towards the target.")]
-    private float smoothingSpeed = 1f;
-    [Tooltip("Temporary smoothing speed applied when configuring offset.")]
-    public float temporarySmoothingSpeed = 1.5f; // default value
-
-    private bool offsetConfigured = false;
-    private bool interpolationEnabled = true;
-
     [Header("Offset Configuration")]
     [Tooltip("Delay between multiple offset configurations in seconds.")]
     public float configureInterval = 1f;
     [Tooltip("Number of times to repeat offset configuration.")]
     public int configureSteps = 5;
+
+    [Header("Smoothing")]
+    [Tooltip("Higher values result in faster movement towards the target.")]
+    public float smoothingSpeed = 1f;
+    [Tooltip("Temporary smoothing speed applied when configuring offset.")]
+    public float temporarySmoothingSpeed = 1.5f; // default value
+    
+    // Target position & rotation calculated from received data
+    private Vector3 _targetPosition;
+    private Quaternion _targetRotation;
+
+    // Offsets to align target object with reference cube
+    private Vector3 _positionOffset = Vector3.zero;
+    private Quaternion _rotationOffset = Quaternion.identity;
+    
+    private bool _offsetConfigured = false;
+    private bool _interpolationEnabled = true;
+    
 
     /// Updates the target position and rotation based on received position and rotation differences.
     public void CubePositionSetter(Vector3 positionDif, Quaternion rotationDif)
@@ -42,15 +43,15 @@ public class TargetPositionUpdater : MonoBehaviour
             rotationDif.w
         );
 
-        // Calculate base rotation and position (gözlüðe göre harici kamera nerede ve rotasyonu ne onu hesaplýyoruz)
-        Quaternion baseRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
-        Vector3 basePosition = markerTransform.position - baseRotation * invertedVector;
+        // Calculate base rotation and position (gï¿½zlï¿½ï¿½e gï¿½re harici kamera nerede ve rotasyonu ne onu hesaplï¿½yoruz)
+        var baseRotation = markerTransform.rotation * Quaternion.Inverse(invertedQuaternion);
+        var basePosition = markerTransform.position - baseRotation * invertedVector;
 
         // Apply offsets if already configured
-        if (offsetConfigured)
+        if (_offsetConfigured)
         {
-            basePosition += positionOffset;
-            baseRotation *= rotationOffset;
+            basePosition += _positionOffset;
+            baseRotation *= _rotationOffset;
         }
 
         _targetPosition = basePosition;
@@ -61,16 +62,16 @@ public class TargetPositionUpdater : MonoBehaviour
     public void ConfigureOffsetMultiple()
     {
         StartCoroutine(ConfigureOffsetRoutine());
-        StartCoroutine(TemporaryBoostSmoothing(configureInterval*configureSteps, 1.5f)); // Boost smoothing speed temporarily
+        StartCoroutine(TemporaryBoostSmoothing(configureInterval*configureSteps, temporarySmoothingSpeed)); // Boost smoothing speed temporarily
     }
 
     /// Temporarily increases smoothing speed and gradually returns it to the original speed.
     private IEnumerator TemporaryBoostSmoothing(float duration, float boostedSpeed)
     {
-        float originalSpeed = smoothingSpeed;
+        var originalSpeed = smoothingSpeed;
         smoothingSpeed = boostedSpeed;
 
-        float elapsed = 0f;
+        var elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
@@ -84,7 +85,7 @@ public class TargetPositionUpdater : MonoBehaviour
     /// Runs ConfigureOffset() multiple times with a delay between each.
     private IEnumerator ConfigureOffsetRoutine()
     {
-        for (int i = 0; i < configureSteps; i++)
+        for (var i = 0; i < configureSteps; i++)
         {
             ConfigureOffset();
             yield return new WaitForSeconds(configureInterval);
@@ -92,26 +93,26 @@ public class TargetPositionUpdater : MonoBehaviour
     }
 
     /// Calculates and stores position and rotation offsets between the target object and the reference cube.
-    public void ConfigureOffset()
+    private void ConfigureOffset()
     {
-        offsetConfigured = false;
+        _offsetConfigured = false;
 
-        Vector3 objectPos = _targetPosition;
-        Quaternion objectRot = _targetRotation;
+        var objectPos = _targetPosition;
+        var objectRot = _targetRotation;
 
-        Vector3 referencePos = referenceCube.position;
-        Quaternion referenceRot = referenceCube.rotation;
+        var referencePos = referenceCube.position;
+        var referenceRot = referenceCube.rotation;
 
-        var positionOffsetnew = referencePos - objectPos;
-        var rotationOffsetnew = Quaternion.Inverse(objectRot) * referenceRot;
-        rotationOffsetnew.Normalize();
+        var positionOffsetNew = referencePos - objectPos;
+        var rotationOffsetNew = Quaternion.Inverse(objectRot) * referenceRot;
+        rotationOffsetNew.Normalize();
 
-        positionOffset += positionOffsetnew;
-        rotationOffset *= rotationOffsetnew;
+        _positionOffset += positionOffsetNew;
+        _rotationOffset *= rotationOffsetNew;
 
-        offsetConfigured = true;
+        _offsetConfigured = true;
 
-        Debug.Log($"Offset set. Position offset: {positionOffset}, Rotation offset: {rotationOffset.eulerAngles}");
+        Debug.Log($"Offset set. Position offset: {_positionOffset}, Rotation offset: {_rotationOffset.eulerAngles}");
     }
 
 
@@ -120,7 +121,7 @@ public class TargetPositionUpdater : MonoBehaviour
     {
         if (objectTransform == null) return;
 
-        if (interpolationEnabled)
+        if (_interpolationEnabled)
         {
             // Smoothly interpolate towards the target position and rotation
             objectTransform.position = Vector3.Lerp(
@@ -147,8 +148,8 @@ public class TargetPositionUpdater : MonoBehaviour
     #region Getters & Setters
     public void SetSmoothingSpeed(float value) => smoothingSpeed = value;
     public float GetSmoothingSpeed() => smoothingSpeed;
-    public void EnableInterpolation(bool enabled) => interpolationEnabled = enabled;
-    public bool IsInterpolationEnabled() => interpolationEnabled;
+    public void EnableInterpolation(bool enabled) => _interpolationEnabled = enabled;
+    public bool IsInterpolationEnabled() => _interpolationEnabled;
     #endregion
 
 }
