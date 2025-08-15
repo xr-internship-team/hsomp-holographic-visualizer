@@ -8,9 +8,10 @@ using UnityEngine;
 /// Uses a separate thread to write data to a CSV file asynchronously to avoid blocking the main thread.
 public class Logger : MonoBehaviour
 {
+    [Header("Game Objects & Transforms")]
     public GameObject trackedObject;      // The main object being tracked
+    public GameObject refObject; // Optional reference object for distance/rotation comparison
     public Transform playspaceTransform;  // Camera or user reference transform
-    public GameObject refObject;          // Optional reference object for distance/rotation comparison
 
     [Header("Logging Settings")]
     [Tooltip("Enable or disable logging at runtime")]
@@ -22,18 +23,18 @@ public class Logger : MonoBehaviour
     [Tooltip("Sleep time (ms) for the logging thread to reduce CPU usage")]
     [SerializeField] private int logThreadSleepMs = 10;
 
-    private string filePath;              // Path to the CSV log file
-    private StreamWriter writer;          // Stream writer to write log entries
+    private string _filePath;              // Path to the CSV log file
+    private StreamWriter _writer;          // Stream writer to write log entries
 
-    private float timeSinceLastLog = 0f;
-    private bool loggingStarted = false;
-    private float initialDistance = 0f;   // Distance between trackedObject and playspace at start
-    private int timeSign = 0;             // External marker or counter for log synchronization
+    private float _timeSinceLastLog = 0f;
+    private bool _loggingStarted = false;
+    private float _initialDistance = 0f;   // Distance between trackedObject and playspace at start
+    private int _timeSign = 0;             // External marker or counter for log synchronization
 
-    private Thread logThread;             // Thread for asynchronous logging
-    private bool isLoggingThreadRunning = true;
+    private Thread _logThread;             // Thread for asynchronous logging
+    private bool _isLoggingThreadRunning = true;
 
-    private ConcurrentQueue<LogDataEntry> logQueue = new ConcurrentQueue<LogDataEntry>();
+    private ConcurrentQueue<LogDataEntry> _logQueue = new ConcurrentQueue<LogDataEntry>();
 
     // Struct for storing one log entry
     private struct LogDataEntry
@@ -66,14 +67,14 @@ public class Logger : MonoBehaviour
 
         try
         {
-            filePath = Path.Combine(Application.persistentDataPath, "DistanceLog.csv");
-            Debug.Log("Logger path: " + filePath);
+            _filePath = Path.Combine(Application.persistentDataPath, "DistanceLog.csv");
+            Debug.Log("Logger path: " + _filePath);
 
             // Open the file for writing (overwrite existing)
-            writer = new StreamWriter(filePath, false);
+            _writer = new StreamWriter(_filePath, false);
 
             // Write CSV header
-            writer.WriteLine("Time;ObjectX;ObjectY;ObjectZ;ObjectRotX;ObjectRotY;ObjectRotZ;ObjectRotW;" +
+            _writer.WriteLine("Time;ObjectX;ObjectY;ObjectZ;ObjectRotX;ObjectRotY;ObjectRotZ;ObjectRotW;" +
                              "RefX;RefY;RefZ;RefRotX;RefRotY;RefRotZ;RefRotW;" +
                              "CameraX;CameraY;CameraZ;CameraRotX;CameraRotY;CameraRotZ;CameraRotW;" +
                              "InitialDistance;CurrentDistance;ChangeInDistance;RefToTrackedObjDistance;RefToTrackedObjRotationDiff;TimeSign");
@@ -81,14 +82,14 @@ public class Logger : MonoBehaviour
             // Calculate initial distance if objects are assigned
             if (trackedObject != null && playspaceTransform != null)
             {
-                initialDistance = Vector3.Distance(trackedObject.transform.position, playspaceTransform.position);
+                _initialDistance = Vector3.Distance(trackedObject.transform.position, playspaceTransform.position);
             }
 
-            loggingStarted = true;
+            _loggingStarted = true;
 
             // Start logging thread
-            logThread = new Thread(WriteLogThread);
-            logThread.Start();
+            _logThread = new Thread(WriteLogThread);
+            _logThread.Start();
 
             Debug.Log("Logger started.");
         }
@@ -101,28 +102,28 @@ public class Logger : MonoBehaviour
     /// Adds new log data to the queue at fixed intervals.
     void Update()
     {
-        if (!loggingStarted) return;
+        if (!_loggingStarted) return;
 
-        timeSinceLastLog += Time.deltaTime;
+        _timeSinceLastLog += Time.deltaTime;
 
-        if (timeSinceLastLog >= logIntervalSecond)
+        if (_timeSinceLastLog >= logIntervalSecond)
         {
             EnqueueLogData();
-            timeSinceLastLog = 0f;
+            _timeSinceLastLog = 0f;
         }
     }
 
     /// Stop logging thread and close the file when application quits.
     private void OnApplicationQuit()
     {
-        if (!loggingEnabled || !loggingStarted) return;
+        if (!loggingEnabled || !_loggingStarted) return;
         
-        isLoggingThreadRunning = false;
-        logThread?.Join(); // Wait for thread to finish
+        _isLoggingThreadRunning = false;
+        _logThread?.Join(); // Wait for thread to finish
 
         try
         {
-            writer?.Close();
+            _writer?.Close();
             Debug.Log("Logger file closed.");
         }
         catch (Exception ex)
@@ -146,9 +147,9 @@ public class Logger : MonoBehaviour
             objRot = trackedObject.transform.rotation,
             camPos = playspaceTransform.position,
             camRot = playspaceTransform.rotation,
-            initialDistance = initialDistance,
+            initialDistance = _initialDistance,
             currentDistance = Vector3.Distance(trackedObject.transform.position, playspaceTransform.position),
-            timeSign = timeSign
+            timeSign = _timeSign
         };
 
         entry.changeInDistance = Mathf.Abs(entry.initialDistance - entry.currentDistance);
@@ -169,15 +170,15 @@ public class Logger : MonoBehaviour
             entry.rotationDifference = -1f;
         }
 
-        logQueue.Enqueue(entry);
+        _logQueue.Enqueue(entry);
     }
 
     /// Thread function that writes queued log entries to CSV asynchronously.
     private void WriteLogThread()
     {
-        while (isLoggingThreadRunning)
+        while (_isLoggingThreadRunning)
         {
-            while (logQueue.TryDequeue(out LogDataEntry entry))
+            while (_logQueue.TryDequeue(out LogDataEntry entry))
             {
                 string[] values = new string[]
                 {
@@ -196,8 +197,8 @@ public class Logger : MonoBehaviour
 
                 try
                 {
-                    writer?.WriteLine(line);
-                    writer?.Flush(); // Write immediately to disk
+                    _writer?.WriteLine(line);
+                    _writer?.Flush(); // Write immediately to disk
                 }
                 catch (Exception ex)
                 {
@@ -215,14 +216,14 @@ public class Logger : MonoBehaviour
     /// Set the external time sign for synchronization purposes.
     public void SetTimeSign(int value)
     {
-        timeSign = value;
-        Debug.Log("Logger timeSign updated externally: " + timeSign);
+        _timeSign = value;
+        Debug.Log("Logger timeSign updated externally: " + _timeSign);
     }
 
     /// Get the current time sign.
     public int GetTimeSign()
     {
-        return timeSign;
+        return _timeSign;
     }
     #endregion
 
