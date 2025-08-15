@@ -7,38 +7,38 @@ using System.Collections;
 /// interpolation toggle, and TimeSign updates.
 public class ButtonHandler : MonoBehaviour
 {
+    [Header("Reference Files")]
     public Logger logger; // Reference to Logger for time sign updates
-
-    public Interactable TimeSignButton;
-    public TextMeshPro TimeSignButtonText;
-
     public TargetPositionUpdater targetPositionUpdater;
-
+    
+    [Header("interactable Buttons")]
     public Interactable smoothLevelButtonInc;
     public Interactable smoothLevelButtonDec;
-    public TextMeshPro smoothLevelButtonText;
-
     public Interactable configureOffsetButton;
-    public TextMeshPro configureOffsetButtonText;
-
+    public Interactable timeSignButton;
     public Interactable interpolationToggle;
-
+    
+    [Header("UI Texts")]
+    public TextMeshPro smoothLevelButtonText;
+    public TextMeshPro configureOffsetButtonText;
+    public TextMeshPro timeSignButtonText;
+    
     [Header("Smoothing Step Settings")]
     public float smoothingStep = 0.1f; // Increment/decrement step for smoothing, adjustable in Inspector
 
-    private Coroutine configureCoroutine = null; // Coroutine reference for countdown display
+    private Coroutine _configureCoroutine = null; // Coroutine reference for countdown display
 
-    private int timeSign;                // Current time sign
-    private float smoothingSpeed;        // Current smoothing speed
+    private int _timeSign;                // Current time sign
+    private float _smoothingSpeed;        // Current smoothing speed
 
     #region UnityEventFunctions
 
     /// Unity Start method. Adds listeners to buttons and initializes UI values.
     void Start()
     {
-        if (TimeSignButton != null)
+        if (timeSignButton != null)
         {
-            TimeSignButton.OnClick.AddListener(TimeSignButtonClicked);
+            timeSignButton.OnClick.AddListener(TimeSignButtonClicked);
         }
 
         if (targetPositionUpdater != null)
@@ -61,11 +61,11 @@ public class ButtonHandler : MonoBehaviour
         }
 
         // Initialize values from Logger and TargetPositionUpdater
-        timeSign = logger.GetTimeSign();
-        smoothingSpeed = targetPositionUpdater.GetSmoothingSpeed();
+        _timeSign = logger.GetTimeSign();
+        _smoothingSpeed = targetPositionUpdater.GetSmoothingSpeed();
 
-        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
-        TimeSignButtonText.text = "TimeSign: " + timeSign;
+        smoothLevelButtonText.text = "Smoothing Level: " + _smoothingSpeed.ToString("F1"); ;
+        timeSignButtonText.text = "TimeSign: " + _timeSign;
     }
     #endregion
 
@@ -84,7 +84,7 @@ public class ButtonHandler : MonoBehaviour
         }
     }
 
-    /// Called when the configure offset button is clicked.
+    /// Called when the configured offset button is clicked.
     /// Starts the offset configuration and countdown coroutine.
     private void ConfigureOffsetClicked()
     {
@@ -92,12 +92,12 @@ public class ButtonHandler : MonoBehaviour
         {
             targetPositionUpdater.ConfigureOffsetMultiple();
 
-            if (configureCoroutine != null)
-                StopCoroutine(configureCoroutine);
+            if (_configureCoroutine != null)
+                StopCoroutine(_configureCoroutine);
 
-            // Calculate total duration of the configuration
-            float totalTime = targetPositionUpdater.configureInterval * targetPositionUpdater.configureSteps;
-            configureCoroutine = StartCoroutine(ConfigureOffsetCountdown(totalTime, targetPositionUpdater.configureSteps));
+            // Calculate the total duration of the configuration
+            var totalTime = targetPositionUpdater.configureInterval * targetPositionUpdater.configureSteps;
+            _configureCoroutine = StartCoroutine(ConfigureOffsetCountdown(totalTime, targetPositionUpdater.configureSteps));
 
             Debug.Log("Offset configuration triggered from button.");
         }
@@ -106,39 +106,39 @@ public class ButtonHandler : MonoBehaviour
     /// Increase smoothing speed and update UI.
     private void SmoothIncButtonClicked()
     {
-        smoothingSpeed += smoothingStep;
-        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
-        Debug.Log("Inc button clicked. smooth = " + smoothingSpeed.ToString("F1"));
+        _smoothingSpeed += smoothingStep;
+        smoothLevelButtonText.text = "Smoothing Level: " + _smoothingSpeed.ToString("F1"); ;
+        Debug.Log("Inc button clicked. smooth = " + _smoothingSpeed.ToString("F1"));
 
         if (targetPositionUpdater != null)
         {
-            targetPositionUpdater.SetSmoothingSpeed(smoothingSpeed);
+            targetPositionUpdater.SetSmoothingSpeed(_smoothingSpeed);
         }
     }
 
     /// Decrease smoothing speed and update UI.
     private void SmoothDecButtonClicked()
     {
-        smoothingSpeed -= smoothingStep;
-        smoothLevelButtonText.text = "Smoothing Level: " + smoothingSpeed.ToString("F1"); ;
-        Debug.Log("Dec button clicked. smooth = " + smoothingSpeed.ToString("F1"));
+        _smoothingSpeed -= smoothingStep;
+        smoothLevelButtonText.text = "Smoothing Level: " + _smoothingSpeed.ToString("F1"); ;
+        Debug.Log("Dec button clicked. smooth = " + _smoothingSpeed.ToString("F1"));
 
         if (targetPositionUpdater != null)
         {
-            targetPositionUpdater.SetSmoothingSpeed(smoothingSpeed);
+            targetPositionUpdater.SetSmoothingSpeed(_smoothingSpeed);
         }
     }
 
     /// Increases the time sign and updates logger and UI.
     private void TimeSignButtonClicked()
     {
-        timeSign += 1;
-        Debug.Log("Logger button clicked. TimeSign = " + timeSign);
-        TimeSignButtonText.text = "TimeSign: " + timeSign;
+        _timeSign += 1;
+        Debug.Log("Logger button clicked. TimeSign = " + _timeSign);
+        timeSignButtonText.text = "TimeSign: " + _timeSign;
 
         if (logger != null)
         {
-            logger.SetTimeSign(timeSign);
+            logger.SetTimeSign(_timeSign);
         }
     }
 
@@ -146,15 +146,15 @@ public class ButtonHandler : MonoBehaviour
     /// Updates the configureOffsetButtonText each interval.
     private IEnumerator ConfigureOffsetCountdown(float totalDuration, int steps)
     {
-        float interval = totalDuration / steps;
+        var interval = totalDuration / steps;
 
-        for (int i = steps; i > 0; i--)
+        for (var i = steps; i > 0; i--)
         {
-            configureOffsetButtonText.text = $"Configure offset in:\n{i * interval:0.0}s\n\n";
+            configureOffsetButtonText.text = $"Align Object\n{i * interval:0.0}s";
             yield return new WaitForSeconds(interval);
         }
 
-        configureOffsetButtonText.text = "Configure offset done.\nPress to configure again.\n\n\n";
+        configureOffsetButtonText.text = "Align Object\n";
     }
     #endregion
 }
