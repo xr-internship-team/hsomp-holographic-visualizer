@@ -44,7 +44,7 @@ public class ReceiverProcessor : MonoBehaviour
             {
                 var receivedData = _receivedDataQueue.Dequeue();
 
-                double incomingTimestamp = receivedData.GetTimeStamp();
+                var incomingTimestamp = receivedData.GetTimeStamp();
 
                 // Skip outdated packets
                 if (incomingTimestamp > _lastAppliedTimestamp)
